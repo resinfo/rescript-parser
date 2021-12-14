@@ -1,0 +1,11 @@
+{
+  "name": "rescript-parser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/resinfo/rescript-parser.git",
+  "author": "Oliver Fencott <oliverfencott@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "rescript": "^9.1.4"
+  }
+}

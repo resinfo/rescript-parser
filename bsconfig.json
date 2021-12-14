@@ -1,0 +1,13 @@
+{
+  "name": "rescript-parser",
+  "version": "0.1.0",
+  "sources": {
+    "dir": "src",
+    "subdirs": true
+  },
+  "package-specs": {
+    "in-source": true,
+    "module": "commonjs",
+    "suffix": ".js"
+  }
+}
