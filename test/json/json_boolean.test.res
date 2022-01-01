@@ -1,6 +1,6 @@
 module P = Parser
 
-let true_ = Json_parser.true_
+let true_ = Json.true_
 
 Ava.test("[JSON] valid true", t => {
   let result = P.run(true_, "true")
@@ -10,10 +10,7 @@ Ava.test("[JSON] valid true", t => {
   | Ok((True, remaining)) =>
     t->Ava.fail(~message=`Parsing "true" should return an empty string but got "${remaining}"`, ())
   | Ok((ast, _)) =>
-    t->Ava.fail(
-      ~message=`Parsing "true" returns an incorrect AST of ${Json_parser.toString(ast)}`,
-      (),
-    )
+    t->Ava.fail(~message=`Parsing "true" returns an incorrect AST of ${Json.toString(ast)}`, ())
   | Error(error) =>
     t->Ava.fail(~message=`Parsing "true" returns an error of message: "${error}"`, ())
   }
@@ -45,7 +42,7 @@ Ava.test("[JSON] invalid true", t => {
   }
 })
 
-let false_ = Json_parser.false_
+let false_ = Json.false_
 
 Ava.test("[JSON] valid false", t => {
   let result = P.run(false_, "false")
@@ -55,10 +52,7 @@ Ava.test("[JSON] valid false", t => {
   | Ok((False, remaining)) =>
     t->Ava.fail(~message=`Parsing "false" should return an empty string but got "${remaining}"`, ())
   | Ok((ast, _)) =>
-    t->Ava.fail(
-      ~message=`Parsing "false" returns an incorrect AST of ${Json_parser.toString(ast)}`,
-      (),
-    )
+    t->Ava.fail(~message=`Parsing "false" returns an incorrect AST of ${Json.toString(ast)}`, ())
   | Error(error) =>
     t->Ava.fail(~message=`Parsing "false" returns an error of message: "${error}"`, ())
   }

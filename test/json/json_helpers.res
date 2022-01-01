@@ -1,8 +1,4 @@
 /*
- **  Full spec available here:
- **  https://www.json.org/json-en.html
- **
- **
  ** json
  **   element
  **
@@ -106,21 +102,35 @@
  **   '0009' ws
  */
 
-type rec t =
-  | Null
-  | True
-  | False
+module Option = Belt.Option
+module P = Parser
 
-let toString = t => {
-  switch t {
-  | Null => "Null"
-  | True => "True"
-  | False => "False"
+let charToString = c => c->int_of_char->Js.String.fromCharCode
+
+let rec charListToString = chars => {
+  switch chars {
+  | list{} => ""
+  | list{char, ...rest} => char ++ charListToString(rest)
   }
 }
 
-module P = Parser
+let digit = P.satisfy(c => c >= '0' && '9' >= c)->P.map(charToString)
 
-let null = P.string("null")->P.map(_ => Null)
-let true_ = P.string("true")->P.map(_ => True)
-let false_ = P.string("false")->P.map(_ => False)
+let digits = P.atLeastOne(digit)->P.map(charListToString)
+
+let sign = P.anyOf(['+', '-'])
+
+let integer = ""
+let fraction = P.char('.')->P.andThen(digits)->P.map(((dot, digits)) => charToString(dot) ++ digits)
+
+let exponent = {
+  let toString = (((char, sign), digits)) => {
+    char->charToString ++ sign->Option.map(charToString)->Option.getWithDefault("") ++ digits
+  }
+
+  P.choice([
+    //
+    P.char('e')->P.andThen(P.optional(sign))->P.andThen(digits)->P.map(toString),
+    P.char('E')->P.andThen(P.optional(sign))->P.andThen(digits)->P.map(toString),
+  ])
+}

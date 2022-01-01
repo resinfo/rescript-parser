@@ -2,18 +2,18 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
+var Json = require("./json.cjs");
 var Parser = require("../../src/parser.cjs");
-var Json_parser = require("./json_parser.cjs");
 
 Ava.test("[JSON] valid null", (function (t) {
-        var result = Parser.run(Json_parser.$$null, "null");
+        var result = Parser.run(Json.$$null, "null");
         if (result.TAG !== /* Ok */0) {
           return Ava.fail(t, "Parsing \"null\" returns an error of message: \"" + result._0 + "\"", undefined);
         }
         var match = result._0;
         var ast = match[0];
         if (ast !== 0) {
-          return Ava.fail(t, "Parsing \"null\" returns an incorrect AST of " + Json_parser.toString(ast), undefined);
+          return Ava.fail(t, "Parsing \"null\" returns an incorrect AST of " + Json.toString(ast), undefined);
         }
         var remaining = match[1];
         if (remaining === "") {
@@ -24,19 +24,19 @@ Ava.test("[JSON] valid null", (function (t) {
       }));
 
 Ava.test("[JSON] invalid null", (function (t) {
-        var result = Parser.run(Json_parser.$$null, "tnull");
+        var result = Parser.run(Json.$$null, "tnull");
         if (result.TAG === /* Ok */0) {
           Ava.fail(t, undefined, undefined);
         } else {
           Ava.pass(t, "Parsing \"null\" should return an error message", undefined);
         }
-        var result$1 = Parser.run(Json_parser.$$null, "  ");
+        var result$1 = Parser.run(Json.$$null, "  ");
         if (result$1.TAG === /* Ok */0) {
           Ava.fail(t, undefined, undefined);
         } else {
           Ava.pass(t, "Parsing \"null\" should return an error message", undefined);
         }
-        var result$2 = Parser.run(Json_parser.$$null, "no");
+        var result$2 = Parser.run(Json.$$null, "no");
         if (result$2.TAG === /* Ok */0) {
           return Ava.fail(t, undefined, undefined);
         } else {
@@ -46,7 +46,7 @@ Ava.test("[JSON] invalid null", (function (t) {
 
 var P;
 
-var $$null = Json_parser.$$null;
+var $$null = Json.$$null;
 
 exports.P = P;
 exports.$$null = $$null;

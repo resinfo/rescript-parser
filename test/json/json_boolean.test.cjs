@@ -2,18 +2,18 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
+var Json = require("./json.cjs");
 var Parser = require("../../src/parser.cjs");
-var Json_parser = require("./json_parser.cjs");
 
 Ava.test("[JSON] valid true", (function (t) {
-        var result = Parser.run(Json_parser.true_, "true");
+        var result = Parser.run(Json.true_, "true");
         if (result.TAG !== /* Ok */0) {
           return Ava.fail(t, "Parsing \"true\" returns an error of message: \"" + result._0 + "\"", undefined);
         }
         var match = result._0;
         var ast = match[0];
         if (ast !== 1) {
-          return Ava.fail(t, "Parsing \"true\" returns an incorrect AST of " + Json_parser.toString(ast), undefined);
+          return Ava.fail(t, "Parsing \"true\" returns an incorrect AST of " + Json.toString(ast), undefined);
         }
         var remaining = match[1];
         if (remaining === "") {
@@ -24,19 +24,19 @@ Ava.test("[JSON] valid true", (function (t) {
       }));
 
 Ava.test("[JSON] invalid true", (function (t) {
-        var result = Parser.run(Json_parser.true_, "ttrue");
+        var result = Parser.run(Json.true_, "ttrue");
         if (result.TAG === /* Ok */0) {
           Ava.fail(t, undefined, undefined);
         } else {
           Ava.pass(t, "Parsing \"true_\" should return an error message", undefined);
         }
-        var result$1 = Parser.run(Json_parser.true_, "false");
+        var result$1 = Parser.run(Json.true_, "false");
         if (result$1.TAG === /* Ok */0) {
           Ava.fail(t, undefined, undefined);
         } else {
           Ava.pass(t, "Parsing \"true_\" should return an error message", undefined);
         }
-        var result$2 = Parser.run(Json_parser.true_, "{}}");
+        var result$2 = Parser.run(Json.true_, "{}}");
         if (result$2.TAG === /* Ok */0) {
           return Ava.fail(t, undefined, undefined);
         } else {
@@ -45,49 +45,48 @@ Ava.test("[JSON] invalid true", (function (t) {
       }));
 
 Ava.test("[JSON] valid false", (function (t) {
-        var result = Parser.run(Json_parser.false_, "false");
+        var result = Parser.run(Json.false_, "false");
         if (result.TAG !== /* Ok */0) {
           return Ava.fail(t, "Parsing \"false\" returns an error of message: \"" + result._0 + "\"", undefined);
         }
         var match = result._0;
         var ast = match[0];
-        if (ast < 2) {
-          return Ava.fail(t, "Parsing \"false\" returns an incorrect AST of " + Json_parser.toString(ast), undefined);
+        if (typeof ast === "number" && ast >= 2) {
+          var remaining = match[1];
+          if (remaining === "") {
+            return Ava.pass(t, undefined, undefined);
+          } else {
+            return Ava.fail(t, "Parsing \"false\" should return an empty string but got \"" + remaining + "\"", undefined);
+          }
         }
-        var remaining = match[1];
-        if (remaining === "") {
-          return Ava.pass(t, undefined, undefined);
-        } else {
-          return Ava.fail(t, "Parsing \"false\" should return an empty string but got \"" + remaining + "\"", undefined);
-        }
+        return Ava.fail(t, "Parsing \"false\" returns an incorrect AST of " + Json.toString(ast), undefined);
       }));
 
 Ava.test("[JSON] invalid false", (function (t) {
-        var result = Parser.run(Json_parser.false_, "tfalse");
+        var result = Parser.run(Json.false_, "tfalse");
         if (result.TAG === /* Ok */0) {
           Ava.fail(t, undefined, undefined);
         } else {
           Ava.pass(t, "Parsing \"false_\" should return an error message", undefined);
         }
-        var result$1 = Parser.run(Json_parser.false_, " true");
+        var result$1 = Parser.run(Json.false_, " true");
         if (result$1.TAG === /* Ok */0) {
           Ava.fail(t, undefined, undefined);
         } else {
           Ava.pass(t, "Parsing \"false_\" should return an error message", undefined);
         }
-        var result$2 = Parser.run(Json_parser.false_, "{}}");
-        if (result$2.TAG === /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        } else {
+        var result$2 = Parser.run(Json.false_, "{}}");
+        if (result$2.TAG !== /* Ok */0) {
           return Ava.pass(t, "Parsing \"false_\" should return an error message", undefined);
         }
+        return Ava.fail(t, undefined, undefined);
       }));
 
 var P;
 
-var true_ = Json_parser.true_;
+var true_ = Json.true_;
 
-var false_ = Json_parser.false_;
+var false_ = Json.false_;
 
 exports.P = P;
 exports.true_ = true_;
