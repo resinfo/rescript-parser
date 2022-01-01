@@ -1,0 +1,18 @@
+enum Role {
+  USER
+  ADMIN
+}
+
+type User {
+  id: ID!
+  role: Role
+  contacts: [User!]!
+}
+
+type Query {
+  user(id: ID!): User
+}
+
+schema {
+  query: Query
+}
