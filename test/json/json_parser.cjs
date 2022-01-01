@@ -19,9 +19,19 @@ var $$null = Parser.map(Parser.string("null"), (function (param) {
         return /* Null */0;
       }));
 
+var true_ = Parser.map(Parser.string("true"), (function (param) {
+        return /* True */1;
+      }));
+
+var false_ = Parser.map(Parser.string("false"), (function (param) {
+        return /* False */2;
+      }));
+
 var P;
 
 exports.toString = toString;
 exports.P = P;
 exports.$$null = $$null;
+exports.true_ = true_;
+exports.false_ = false_;
 /* null Not a pure module */

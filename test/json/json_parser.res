@@ -122,3 +122,5 @@ let toString = t => {
 module P = Parser
 
 let null = P.string("null")->P.map(_ => Null)
+let true_ = P.string("true")->P.map(_ => True)
+let false_ = P.string("false")->P.map(_ => False)
