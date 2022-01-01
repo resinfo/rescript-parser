@@ -63,33 +63,33 @@
  ** number
  **   integer fraction exponent
  **
- ** integer
+ ** integer ✔︎
  **   digit
  **   onenine digits
  **   '-' digit
  **   '-' onenine digits
  **
- ** digits
+ ** digits ✔︎
  **   digit
  **   digit digits
  **
- ** digit
+ ** digit ✔︎
  **   '0'
  **   onenine
  **
- ** onenine
+ ** onenine ✔︎
  **   '1' . '9'
  **
- ** fraction
+ ** fraction ✔︎
  **   ""
  **   '.' digits
  **
- ** exponent
+ ** exponent ✔︎
  **   ""
  **   'E' sign digits
  **   'e' sign digits
  **
- ** sign
+ ** sign ✔︎
  **   ""
  **   '+'
  **   '-'
@@ -114,13 +114,14 @@ let rec charListToString = chars => {
   }
 }
 
-let digit = P.satisfy(c => c >= '0' && '9' >= c)->P.map(charToString)
+let zero = P.char('0')
+let oneThroughNine = P.satisfy(c => c >= '1' && '9' >= c)
 
+let digit = zero->P.orElse(oneThroughNine)->P.map(charToString)
 let digits = P.atLeastOne(digit)->P.map(charListToString)
 
 let sign = P.anyOf(['+', '-'])
 
-let integer = ""
 let fraction = P.char('.')->P.andThen(digits)->P.map(((dot, digits)) => charToString(dot) ++ digits)
 
 let exponent = {
@@ -129,8 +130,43 @@ let exponent = {
   }
 
   P.choice([
-    //
     P.char('e')->P.andThen(P.optional(sign))->P.andThen(digits)->P.map(toString),
     P.char('E')->P.andThen(P.optional(sign))->P.andThen(digits)->P.map(toString),
   ])
+}
+
+let integer = {
+  let toString = ((sign, digits)) => charToString(sign) ++ digits
+  let oneThroughNineThenDigits = {
+    oneThroughNine->P.andThen(digits)->P.map(toString)
+  }
+  let signThenDigit = {
+    P.char('-')->P.andThen(digit)->P.map(toString)
+  }
+  let signThenOneThroughNineThenDigits = {
+    P.char('-')
+    ->P.andThen(oneThroughNine)
+    ->P.andThen(digits)
+    ->P.map((((sign, digit), rest)) => charToString(sign) ++ charToString(digit) ++ rest)
+  }
+
+  P.choice([
+    //
+    oneThroughNineThenDigits,
+    digit,
+    signThenOneThroughNineThenDigits,
+    signThenDigit,
+  ])
+}
+
+let number = {
+  let fraction = P.optional(fraction)
+  let exponent = P.optional(exponent)
+
+  integer
+  ->P.andThen(fraction)
+  ->P.andThen(exponent)
+  ->P.map((((integer, fraction), exponent)) =>
+    integer ++ fraction->Option.getWithDefault("") ++ exponent->Option.getWithDefault("")
+  )
 }

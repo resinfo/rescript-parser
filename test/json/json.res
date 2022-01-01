@@ -122,6 +122,7 @@ let toString = t => {
 }
 
 module P = Parser
+module Helpers = Json_helpers
 
 let _charToString = c => c->int_of_char->Js.String.fromCharCode
 
@@ -129,23 +130,4 @@ let null = P.string("null")->P.map(_ => Null)
 let true_ = P.string("true")->P.map(_ => True)
 let false_ = P.string("false")->P.map(_ => False)
 
-let number = {
-  let digit = P.satisfy(c => c >= '0' && '9' >= c)->P.map(_charToString)
-
-  let digits = {
-    P.choice([
-      digit,
-      digit
-      ->P.andThen(P.many(digit))
-      ->P.map(((head, rest)) => Belt.List.reduce(rest, head, Js.String2.concat)),
-    ])
-  }
-
-  let sign = P.anyOf(['+', '-'])->P.optional
-
-  let integer = ""
-  let fraction = ""
-  let exponent = P.char('E')->P.andThen(sign)
-
-  ""
-}
+let number = Helpers.number->P.map(number => Number(number))

@@ -16,13 +16,17 @@ function charListToString(chars) {
   }
 }
 
-var digit = Parser.map(Parser.satisfy(function (c) {
-          if (c >= /* '0' */48) {
-            return /* '9' */57 >= c;
-          } else {
-            return false;
-          }
-        }), charToString);
+var zero = Parser.$$char(/* '0' */48);
+
+var oneThroughNine = Parser.satisfy(function (c) {
+      if (c >= /* '1' */49) {
+        return /* '9' */57 >= c;
+      } else {
+        return false;
+      }
+    });
+
+var digit = Parser.map(Parser.orElse(zero, oneThroughNine), charToString);
 
 var digits = Parser.map(Parser.atLeastOne(digit), charListToString);
 
@@ -45,20 +49,50 @@ var exponent = Parser.choice([
       Parser.map(Parser.andThen(Parser.andThen(Parser.$$char(/* 'E' */69), Parser.optional(sign)), digits), toString)
     ]);
 
+function toString$1(param) {
+  return String.fromCharCode(param[0]) + param[1];
+}
+
+var oneThroughNineThenDigits = Parser.map(Parser.andThen(oneThroughNine, digits), toString$1);
+
+var signThenDigit = Parser.map(Parser.andThen(Parser.$$char(/* '-' */45), digit), toString$1);
+
+var signThenOneThroughNineThenDigits = Parser.map(Parser.andThen(Parser.andThen(Parser.$$char(/* '-' */45), oneThroughNine), digits), (function (param) {
+        var match = param[0];
+        return String.fromCharCode(match[0]) + String.fromCharCode(match[1]) + param[1];
+      }));
+
+var integer = Parser.choice([
+      oneThroughNineThenDigits,
+      digit,
+      signThenOneThroughNineThenDigits,
+      signThenDigit
+    ]);
+
+var fraction$1 = Parser.optional(fraction);
+
+var exponent$1 = Parser.optional(exponent);
+
+var number = Parser.map(Parser.andThen(Parser.andThen(integer, fraction$1), exponent$1), (function (param) {
+        var match = param[0];
+        return match[0] + Belt_Option.getWithDefault(match[1], "") + Belt_Option.getWithDefault(param[1], "");
+      }));
+
 var $$Option;
 
 var P;
-
-var integer = "";
 
 exports.$$Option = $$Option;
 exports.P = P;
 exports.charToString = charToString;
 exports.charListToString = charListToString;
+exports.zero = zero;
+exports.oneThroughNine = oneThroughNine;
 exports.digit = digit;
 exports.digits = digits;
 exports.sign = sign;
-exports.integer = integer;
 exports.fraction = fraction;
 exports.exponent = exponent;
-/* digit Not a pure module */
+exports.integer = integer;
+exports.number = number;
+/* zero Not a pure module */

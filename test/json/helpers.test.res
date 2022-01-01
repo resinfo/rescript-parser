@@ -187,7 +187,7 @@ test("Fraction partially succeeds", t => {
   }
 })
 
-skip("Fraction fails", t => {
+test("Fraction fails", t => {
   switch run("  .1") {
   | Error(_) => t->pass()
   | Ok(_) => t->fail()
@@ -209,6 +209,115 @@ skip("Fraction fails", t => {
   }
 
   switch run("..11") {
+  | Error(_) => t->pass()
+  | Ok(_) => t->fail()
+  }
+})
+
+let run = P.run(Helpers.sign)
+
+test("Sign succeeds", t => {
+  switch run("-") {
+  | Ok('-', "") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("+") {
+  | Ok('+', "") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+})
+
+test("Sign partially succeeds", t => {
+  switch run("+1") {
+  | Ok('+', "1") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("-1  1") {
+  | Ok('-', "1  1") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("+     sdf1  1") {
+  | Ok('+', "     sdf1  1") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+})
+
+test("Sign fails", t => {
+  switch run("  +") {
+  | Error(_) => t->pass()
+  | Ok(_) => t->fail()
+  }
+
+  switch run("  1-") {
+  | Error(_) => t->pass()
+  | Ok(_) => t->fail()
+  }
+})
+
+let run = P.run(Helpers.integer)
+
+test("Integer succeeds", t => {
+  switch run("1") {
+  | Ok("1", "") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("0") {
+  | Ok("0", "") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("1234") {
+  | Ok("1234", "") => t->pass()
+  | Ok(ok, rest) => t->fail(~message=`Should not have "${ok}" with "${rest}" remaining`, ())
+  | Error(_) => t->fail()
+  }
+
+  switch run("-1") {
+  | Ok("-1", "") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("-0") {
+  | Ok("-0", "") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("-10002345") {
+  | Ok("-10002345", "") => t->pass()
+  | Ok((res, remaining)) =>
+    t->fail(~message=`Should not be okay of "${res}" with "${remaining}" remaining`, ())
+  | Error(_) => t->fail(~message="Should not be an error", ())
+  }
+})
+
+test("Integer partially succeeds", t => {
+  switch run("1ert") {
+  | Ok("1", "ert") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+
+  switch run("-1  1") {
+  | Ok("-1", "  1") => t->pass()
+  | Ok(_) | Error(_) => t->fail()
+  }
+})
+
+test("Integer fails", t => {
+  switch run("  +") {
+  | Error(_) => t->pass()
+  | Ok(_) => t->fail()
+  }
+
+  switch run("  1") {
+  | Error(_) => t->pass()
+  | Ok(_) => t->fail()
+  }
+
+  switch run("  h1-") {
   | Error(_) => t->pass()
   | Ok(_) => t->fail()
   }

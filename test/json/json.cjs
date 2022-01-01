@@ -2,7 +2,7 @@
 'use strict';
 
 var Parser = require("../../src/parser.cjs");
-var Belt_List = require("rescript/lib/js/belt_List.js");
+var Json_helpers = require("./json_helpers.cjs");
 
 function toString(t) {
   if (typeof t !== "number") {
@@ -35,36 +35,19 @@ var false_ = Parser.map(Parser.string("false"), (function (param) {
         return /* False */2;
       }));
 
-var digit = Parser.map(Parser.satisfy(function (c) {
-          if (c >= /* '0' */48) {
-            return /* '9' */57 >= c;
-          } else {
-            return false;
-          }
-        }), _charToString);
-
-Parser.choice([
-      digit,
-      Parser.map(Parser.andThen(digit, Parser.many(digit)), (function (param) {
-              return Belt_List.reduce(param[1], param[0], (function (prim0, prim1) {
-                            return prim0.concat(prim1);
-                          }));
-            }))
-    ]);
-
-var sign = Parser.optional(Parser.anyOf([
-          /* '+' */43,
-          /* '-' */45
-        ]));
-
-Parser.andThen(Parser.$$char(/* 'E' */69), sign);
+var number = Parser.map(Json_helpers.number, (function (number) {
+        return /* Number */{
+                _0: number
+              };
+      }));
 
 var P;
 
-var number = "";
+var Helpers;
 
 exports.toString = toString;
 exports.P = P;
+exports.Helpers = Helpers;
 exports._charToString = _charToString;
 exports.$$null = $$null;
 exports.true_ = true_;
