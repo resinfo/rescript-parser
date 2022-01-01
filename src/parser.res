@@ -143,3 +143,10 @@ let makeRecursive: makeRecursive<'t> = fn => {
 
   parserRef.contents
 }
+
+let optional = parser => {
+  let some = parser->map(x => Some(x))
+  let none = return(None)
+
+  some->orElse(none)
+}

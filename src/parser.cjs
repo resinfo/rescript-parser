@@ -8,6 +8,7 @@ var $$String = require("rescript/lib/js/string.js");
 var Belt_List = require("rescript/lib/js/belt_List.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Pervasives = require("rescript/lib/js/pervasives.js");
+var Caml_option = require("rescript/lib/js/caml_option.js");
 var Caml_string = require("rescript/lib/js/caml_string.js");
 
 function run(t, input) {
@@ -277,6 +278,24 @@ function makeRecursive(fn) {
   return parserRef.contents;
 }
 
+function optional(parser) {
+  var some = map(parser, (function (x) {
+          return Caml_option.some(x);
+        }));
+  var none = /* Parser */{
+    _0: (function (input) {
+        return {
+                TAG: /* Ok */0,
+                _0: [
+                  undefined,
+                  input
+                ]
+              };
+      })
+  };
+  return orElse(some, none);
+}
+
 exports.run = run;
 exports.bind = bind;
 exports.$$return = $$return;
@@ -301,4 +320,5 @@ exports.separatedBy = separatedBy;
 exports.string = string;
 exports.makeForwardRef = makeForwardRef;
 exports.makeRecursive = makeRecursive;
+exports.optional = optional;
 /* No side effect */
