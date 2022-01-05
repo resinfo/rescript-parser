@@ -2,15 +2,24 @@
 'use strict';
 
 var Parser = require("../../src/parser.cjs");
+var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Belt_Option = require("rescript/lib/js/belt_Option.js");
 
 function charToString(c) {
   return String.fromCharCode(c);
 }
 
-function charListToString(chars) {
+function concatStringList(chars) {
   if (chars) {
-    return chars.hd + charListToString(chars.tl);
+    return chars.hd + concatStringList(chars.tl);
+  } else {
+    return "";
+  }
+}
+
+function stringifyCharList(chars) {
+  if (chars) {
+    return String.fromCharCode(chars.hd) + stringifyCharList(chars.tl);
   } else {
     return "";
   }
@@ -28,7 +37,7 @@ var oneThroughNine = Parser.satisfy(function (c) {
 
 var digit = Parser.map(Parser.orElse(zero, oneThroughNine), charToString);
 
-var digits = Parser.map(Parser.atLeastOne(digit), charListToString);
+var digits = Parser.map(Parser.atLeastOne(digit), concatStringList);
 
 var sign = Parser.anyOf([
       /* '+' */43,
@@ -78,14 +87,100 @@ var number = Parser.map(Parser.andThen(Parser.andThen(integer, fraction$1), expo
         return match[0] + Belt_Option.getWithDefault(match[1], "") + Belt_Option.getWithDefault(param[1], "");
       }));
 
+var doubleQuote = Parser.$$char(/* '"' */34);
+
+var unescapedChar = Parser.map(Parser.map(Parser.satisfy(function (ch) {
+              if (ch !== /* '\\' */92) {
+                return ch !== /* '"' */34;
+              } else {
+                return false;
+              }
+            }), (function (prim) {
+            return prim;
+          })), (function (prim) {
+        return String.fromCharCode(prim);
+      }));
+
+var escapedChar = Parser.choice(Belt_Array.map([
+          [
+            "\\/",
+            /* '/' */47
+          ],
+          [
+            "\\\"",
+            /* '"' */34
+          ],
+          [
+            "\\",
+            /* '\\' */92
+          ],
+          [
+            "\b",
+            /* '\b' */8
+          ],
+          [
+            "\n",
+            /* '\n' */10
+          ],
+          [
+            "\r",
+            /* '\r' */13
+          ],
+          [
+            "\t",
+            /* '\t' */9
+          ]
+        ], (function (param) {
+            var result = param[1];
+            return Parser.map(Parser.string(param[0]), (function (param) {
+                          return String.fromCharCode(result);
+                        }));
+          })));
+
+var backslash = Parser.$$char(/* '\\' */92);
+
+var uChar = Parser.$$char(/* 'u' */117);
+
+var hexdigit = Parser.satisfy(function (c) {
+      if (c > 70 || c < 48) {
+        return !(c > 102 || c < 97);
+      } else {
+        return c > 64 || c < 58;
+      }
+    });
+
+var fourHexDigits = Parser.andThen(Parser.andThen(Parser.andThen(hexdigit, hexdigit), hexdigit), hexdigit);
+
+var unicodeChar = Parser.map(Parser.keepRight(Parser.keepRight(backslash, uChar), fourHexDigits), (function (param) {
+        var match = param[0];
+        var match$1 = match[0];
+        return String.fromCharCode(parseInt(String.fromCharCode(match$1[0], match$1[1], match[1], param[1]), 16));
+      }));
+
+var jsChar = Parser.orElse(Parser.orElse(unescapedChar, escapedChar), unicodeChar);
+
+var quotedString = Parser.map(Parser.between(Parser.many(jsChar), doubleQuote, doubleQuote), concatStringList);
+
+var whitespace = Parser.anyOf([
+      /* ' ' */32,
+      /* '\n' */10,
+      /* '\t' */9,
+      /* '\r' */13
+    ]);
+
+var manyWhitespace = Parser.many(whitespace);
+
 var $$Option;
 
 var P;
 
+var string = quotedString;
+
 exports.$$Option = $$Option;
 exports.P = P;
 exports.charToString = charToString;
-exports.charListToString = charListToString;
+exports.concatStringList = concatStringList;
+exports.stringifyCharList = stringifyCharList;
 exports.zero = zero;
 exports.oneThroughNine = oneThroughNine;
 exports.digit = digit;
@@ -95,4 +190,12 @@ exports.fraction = fraction;
 exports.exponent = exponent;
 exports.integer = integer;
 exports.number = number;
+exports.doubleQuote = doubleQuote;
+exports.unescapedChar = unescapedChar;
+exports.escapedChar = escapedChar;
+exports.unicodeChar = unicodeChar;
+exports.quotedString = quotedString;
+exports.string = string;
+exports.whitespace = whitespace;
+exports.manyWhitespace = manyWhitespace;
 /* zero Not a pure module */

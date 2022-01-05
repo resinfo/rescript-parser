@@ -215,7 +215,7 @@ function keepRight(parserA, parserB) {
 }
 
 function between(parserA, parserB, parserC) {
-  return keepLeft(keepRight(parserA, parserB), parserC);
+  return keepLeft(keepRight(parserB, parserA), parserC);
 }
 
 function separatedBy1(parser, separator) {

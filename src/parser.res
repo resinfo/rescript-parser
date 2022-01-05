@@ -18,7 +18,7 @@ type many<'a> = t<'a> => t<list<'a>>
 type atLeastOne<'a> = t<'a> => t<list<'a>>
 type keepLeft<'a, 'b> = (t<'a>, t<'b>) => t<'a>
 type keepRight<'a, 'b> = (t<'a>, t<'b>) => t<'b>
-type between<'a, 'b, 'c> = (t<'a>, t<'b>, t<'c>) => t<'b>
+type between<'a, 'b, 'c> = (t<'a>, t<'b>, t<'c>) => t<'a>
 type separatedBy<'a, 'b> = (t<'a>, t<'b>) => t<list<'a>>
 type separatedBy1<'a, 'b> = (t<'a>, t<'b>) => t<list<'a>>
 
@@ -103,8 +103,10 @@ let keepLeft: keepLeft<'a, 'b> = (parserA, parserB) => parserA->andThen(parserB)
 
 let keepRight: keepRight<'a, 'b> = (parserA, parserB) => parserA->andThen(parserB)->map(snd)
 
-let between: between<'a, 'b, 'c> = (parserA, parserB, parserC) =>
-  keepLeft(keepRight(parserA, parserB), parserC)
+let between: between<'a, 'b, 'c> = (parserA, parserB, parserC) => {
+  // Keeps parserA
+  parserB->keepRight(parserA)->keepLeft(parserC)
+}
 
 let separatedBy1: separatedBy1<'a, 'b> = (parser, separator) => {
   let separators = keepRight(separator, parser)

@@ -6,6 +6,12 @@ var Parser = require("../../src/parser.cjs");
 var Belt_Range = require("rescript/lib/js/belt_Range.js");
 var Json_helpers = require("./json_helpers.cjs");
 
+function shouldNotPass(param) {
+  return "Should not pass with \"" + param[1] + "\" remaining";
+}
+
+var shouldNotFail = "Should not fail";
+
 Ava.test("Digit succeeds", (function (t) {
         return Belt_Range.forEach(0, 9, (function (index) {
                       var asString = String(index);
@@ -400,10 +406,6 @@ Ava.test("Sign fails", (function (t) {
         }
       }));
 
-function run(param) {
-  return Parser.run(Json_helpers.integer, param);
-}
-
 Ava.test("Integer succeeds", (function (t) {
         var match = Parser.run(Json_helpers.integer, "1");
         if (match.TAG === /* Ok */0) {
@@ -523,11 +525,465 @@ Ava.test("Integer fails", (function (t) {
         }
       }));
 
+Ava.test("Unescaped char succeeds", (function (t) {
+        var match = Parser.run(Json_helpers.unescapedChar, "a");
+        if (match.TAG === /* Ok */0) {
+          var match$1 = match._0;
+          if (match$1[0] === "a" && match$1[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$2 = Parser.run(Json_helpers.unescapedChar, "b");
+        if (match$2.TAG === /* Ok */0) {
+          var match$3 = match$2._0;
+          if (match$3[0] === "b" && match$3[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$4 = Parser.run(Json_helpers.unescapedChar, "c");
+        if (match$4.TAG === /* Ok */0) {
+          var match$5 = match$4._0;
+          if (match$5[0] === "c" && match$5[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$6 = Parser.run(Json_helpers.unescapedChar, "d");
+        if (match$6.TAG === /* Ok */0) {
+          var match$7 = match$6._0;
+          if (match$7[0] === "d" && match$7[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$8 = Parser.run(Json_helpers.unescapedChar, "9");
+        if (match$8.TAG === /* Ok */0) {
+          var match$9 = match$8._0;
+          if (match$9[0] === "9" && match$9[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$10 = Parser.run(Json_helpers.unescapedChar, "-");
+        if (match$10.TAG === /* Ok */0) {
+          var match$11 = match$10._0;
+          if (match$11[0] === "-" && match$11[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$12 = Parser.run(Json_helpers.unescapedChar, " ");
+        if (match$12.TAG !== /* Ok */0) {
+          return Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$13 = match$12._0;
+        if (match$13[0] === " " && match$13[1] === "") {
+          return Ava.pass(t, undefined, undefined);
+        } else {
+          return Ava.fail(t, undefined, undefined);
+        }
+      }));
+
+Ava.test("Unescaped char partially succeeds", (function (t) {
+        var match = Parser.run(Json_helpers.unescapedChar, "a\"");
+        if (match.TAG === /* Ok */0) {
+          var match$1 = match._0;
+          if (match$1[0] === "a" && match$1[1] === "\"") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$2 = Parser.run(Json_helpers.unescapedChar, "a\\");
+        if (match$2.TAG === /* Ok */0) {
+          var match$3 = match$2._0;
+          if (match$3[0] === "a" && match$3[1] === "\\") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$4 = Parser.run(Json_helpers.unescapedChar, "a\\\"");
+        if (match$4.TAG !== /* Ok */0) {
+          return Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$5 = match$4._0;
+        if (match$5[0] === "a" && match$5[1] === "\\\"") {
+          return Ava.pass(t, undefined, undefined);
+        } else {
+          return Ava.fail(t, undefined, undefined);
+        }
+      }));
+
+Ava.test("Unescaped char fails", (function (t) {
+        var match = Parser.run(Json_helpers.unescapedChar, "\"");
+        if (match.TAG === /* Ok */0) {
+          Ava.fail(t, "Should not parse escaped char", undefined);
+        } else {
+          Ava.pass(t, undefined, undefined);
+        }
+        var match$1 = Parser.run(Json_helpers.unescapedChar, "\\");
+        if (match$1.TAG === /* Ok */0) {
+          return Ava.fail(t, "Should not parse escaped char", undefined);
+        } else {
+          return Ava.pass(t, undefined, undefined);
+        }
+      }));
+
+Ava.test("Escaped char succeeds", (function (t) {
+        var match = Parser.run(Json_helpers.escapedChar, "\\\"");
+        if (match.TAG === /* Ok */0) {
+          var match$1 = match._0;
+          if (match$1[0] === "\"" && match$1[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$2 = Parser.run(Json_helpers.escapedChar, "\\");
+        if (match$2.TAG === /* Ok */0) {
+          var match$3 = match$2._0;
+          if (match$3[0] === "\\" && match$3[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$4 = Parser.run(Json_helpers.escapedChar, "\\/");
+        if (match$4.TAG === /* Ok */0) {
+          var match$5 = match$4._0;
+          var exit = 0;
+          if (match$5[0] === "/" && match$5[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            exit = 1;
+          }
+          if (exit === 1) {
+            Ava.fail(t, "Should not succeed with \"" + match$5[1] + "\" remaining", undefined);
+          }
+          
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$6 = Parser.run(Json_helpers.escapedChar, "\b");
+        if (match$6.TAG === /* Ok */0) {
+          var match$7 = match$6._0;
+          if (match$7[0] === "\b" && match$7[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$8 = Parser.run(Json_helpers.escapedChar, "\n");
+        if (match$8.TAG === /* Ok */0) {
+          var match$9 = match$8._0;
+          if (match$9[0] === "\n" && match$9[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$10 = Parser.run(Json_helpers.escapedChar, "\r");
+        if (match$10.TAG === /* Ok */0) {
+          var match$11 = match$10._0;
+          if (match$11[0] === "\r" && match$11[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$12 = Parser.run(Json_helpers.escapedChar, "\t");
+        if (match$12.TAG !== /* Ok */0) {
+          return Ava.fail(t, undefined, undefined);
+        }
+        var match$13 = match$12._0;
+        if (match$13[0] === "\t" && match$13[1] === "") {
+          return Ava.pass(t, undefined, undefined);
+        } else {
+          return Ava.fail(t, undefined, undefined);
+        }
+      }));
+
+Ava.test("Escaped char partially succeeds", (function (t) {
+        var match = Parser.run(Json_helpers.escapedChar, "\\\"  ");
+        if (match.TAG === /* Ok */0) {
+          var match$1 = match._0;
+          if (match$1[0] === "\"" && match$1[1] === "  ") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$2 = Parser.run(Json_helpers.escapedChar, "\\hello");
+        if (match$2.TAG === /* Ok */0) {
+          var match$3 = match$2._0;
+          if (match$3[0] === "\\" && match$3[1] === "hello") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$4 = Parser.run(Json_helpers.escapedChar, "\\/\\/");
+        if (match$4.TAG === /* Ok */0) {
+          var match$5 = match$4._0;
+          var exit = 0;
+          if (match$5[0] === "/" && match$5[1] === "\\/") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            exit = 1;
+          }
+          if (exit === 1) {
+            Ava.fail(t, "Should not succeed with \"" + match$5[1] + "\" remaining", undefined);
+          }
+          
+        } else {
+          Ava.fail(t, "Should not fail", undefined);
+        }
+        var match$6 = Parser.run(Json_helpers.escapedChar, "\b-1234gfd");
+        if (match$6.TAG === /* Ok */0) {
+          var match$7 = match$6._0;
+          if (match$7[0] === "\b" && match$7[1] === "-1234gfd") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$8 = Parser.run(Json_helpers.escapedChar, "\n l ll ll \n");
+        if (match$8.TAG === /* Ok */0) {
+          var match$9 = match$8._0;
+          if (match$9[0] === "\n" && match$9[1] === " l ll ll \n") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$10 = Parser.run(Json_helpers.escapedChar, "\r\n");
+        if (match$10.TAG === /* Ok */0) {
+          var match$11 = match$10._0;
+          if (match$11[0] === "\r" && match$11[1] === "\n") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, undefined, undefined);
+          }
+        } else {
+          Ava.fail(t, undefined, undefined);
+        }
+        var match$12 = Parser.run(Json_helpers.escapedChar, "\t\\lll");
+        if (match$12.TAG !== /* Ok */0) {
+          return Ava.fail(t, undefined, undefined);
+        }
+        var match$13 = match$12._0;
+        if (match$13[0] === "\t" && match$13[1] === "\\lll") {
+          return Ava.pass(t, undefined, undefined);
+        } else {
+          return Ava.fail(t, undefined, undefined);
+        }
+      }));
+
+Ava.test("Escaped char fails", (function (t) {
+        var match = Parser.run(Json_helpers.escapedChar, " \"");
+        if (match.TAG === /* Ok */0) {
+          Ava.fail(t, undefined, undefined);
+        } else {
+          Ava.pass(t, undefined, undefined);
+        }
+        var match$1 = Parser.run(Json_helpers.escapedChar, " \\\"");
+        if (match$1.TAG === /* Ok */0) {
+          Ava.fail(t, undefined, undefined);
+        } else {
+          Ava.pass(t, undefined, undefined);
+        }
+        var match$2 = Parser.run(Json_helpers.escapedChar, "asfds\t");
+        if (match$2.TAG === /* Ok */0) {
+          return Ava.fail(t, undefined, undefined);
+        } else {
+          return Ava.pass(t, undefined, undefined);
+        }
+      }));
+
+function run(param) {
+  return Parser.run(Json_helpers.unicodeChar, param);
+}
+
+Ava.test("Unicode char succeeds", (function (t) {
+        var x = Parser.run(Json_helpers.unicodeChar, "\\u0041");
+        if (x.TAG === /* Ok */0) {
+          var x$1 = x._0;
+          if (x$1[0] === "A" && x$1[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, shouldNotPass(x$1), undefined);
+          }
+        } else {
+          Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$2 = Parser.run(Json_helpers.unicodeChar, "\\u0031");
+        if (x$2.TAG === /* Ok */0) {
+          var x$3 = x$2._0;
+          if (x$3[0] === "1" && x$3[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, shouldNotPass(x$3), undefined);
+          }
+        } else {
+          Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$4 = Parser.run(Json_helpers.unicodeChar, "\\u0028");
+        if (x$4.TAG === /* Ok */0) {
+          var x$5 = x$4._0;
+          if (x$5[0] === "(" && x$5[1] === "") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, shouldNotPass(x$5), undefined);
+          }
+        } else {
+          Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$6 = Parser.run(Json_helpers.unicodeChar, "\\u0101");
+        if (x$6.TAG !== /* Ok */0) {
+          return Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$7 = x$6._0;
+        if (x$7[1] === "" && x$7[0] === String.fromCharCode(257)) {
+          return Ava.pass(t, undefined, undefined);
+        } else {
+          return Ava.fail(t, shouldNotPass(x$7), undefined);
+        }
+      }));
+
+Ava.test("Unicode char partially succeeds", (function (t) {
+        var x = Parser.run(Json_helpers.unicodeChar, "\\u0041asdf");
+        if (x.TAG === /* Ok */0) {
+          var x$1 = x._0;
+          if (x$1[0] === "A" && x$1[1] === "asdf") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, shouldNotPass(x$1), undefined);
+          }
+        } else {
+          Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$2 = Parser.run(Json_helpers.unicodeChar, "\\u0041asdf");
+        if (x$2.TAG === /* Ok */0) {
+          var x$3 = x$2._0;
+          if (x$3[0] === "A" && x$3[1] === "asdf") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, shouldNotPass(x$3), undefined);
+          }
+        } else {
+          Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$4 = Parser.run(Json_helpers.unicodeChar, "\\u0031999");
+        if (x$4.TAG === /* Ok */0) {
+          var x$5 = x$4._0;
+          if (x$5[0] === "1" && x$5[1] === "999") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, shouldNotPass(x$5), undefined);
+          }
+        } else {
+          Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$6 = Parser.run(Json_helpers.unicodeChar, "\\u0028   lol");
+        if (x$6.TAG === /* Ok */0) {
+          var x$7 = x$6._0;
+          if (x$7[0] === "(" && x$7[1] === "   lol") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            Ava.fail(t, shouldNotPass(x$7), undefined);
+          }
+        } else {
+          Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$8 = Parser.run(Json_helpers.unicodeChar, "\\u0101\\u0101");
+        if (x$8.TAG !== /* Ok */0) {
+          return Ava.fail(t, shouldNotFail, undefined);
+        }
+        var x$9 = x$8._0;
+        if (x$9[1] === "\\u0101" && x$9[0] === String.fromCharCode(257)) {
+          return Ava.pass(t, undefined, undefined);
+        } else {
+          return Ava.fail(t, shouldNotPass(x$9), undefined);
+        }
+      }));
+
+Ava.test("Unicode char fails", (function (t) {
+        var x = Parser.run(Json_helpers.unicodeChar, "  \\u0041asdf");
+        if (x.TAG === /* Ok */0) {
+          Ava.fail(t, shouldNotPass(x._0), undefined);
+        } else {
+          Ava.pass(t, shouldNotFail, undefined);
+        }
+        var x$1 = Parser.run(Json_helpers.unicodeChar, "\\\\u0031999");
+        if (x$1.TAG === /* Ok */0) {
+          Ava.fail(t, shouldNotPass(x$1._0), undefined);
+        } else {
+          Ava.pass(t, shouldNotFail, undefined);
+        }
+        var x$2 = Parser.run(Json_helpers.unicodeChar, "l\\u0028   lol");
+        if (x$2.TAG === /* Ok */0) {
+          Ava.fail(t, shouldNotPass(x$2._0), undefined);
+        } else {
+          Ava.pass(t, shouldNotFail, undefined);
+        }
+        var x$3 = Parser.run(Json_helpers.unicodeChar, "/\\u0101\\u0101");
+        if (x$3.TAG === /* Ok */0) {
+          return Ava.fail(t, shouldNotPass(x$3._0), undefined);
+        } else {
+          return Ava.pass(t, shouldNotFail, undefined);
+        }
+      }));
+
 var P;
 
 var Helpers;
 
 exports.P = P;
 exports.Helpers = Helpers;
+exports.shouldNotPass = shouldNotPass;
+exports.shouldNotFail = shouldNotFail;
 exports.run = run;
 /*  Not a pure module */

@@ -5,6 +5,10 @@ module Helpers = Json_helpers
 
 let run = P.run(Helpers.digit)
 
+let shouldNotPass = ((_, remaining)) => `Should not pass with "${remaining}" remaining`
+
+let shouldNotFail = "Should not fail"
+
 test("Digit succeeds", t => {
   Belt.Range.forEach(0, 9, index => {
     let asString = index->string_of_int
@@ -320,5 +324,271 @@ test("Integer fails", t => {
   switch run("  h1-") {
   | Error(_) => t->pass()
   | Ok(_) => t->fail()
+  }
+})
+
+let run = P.run(Helpers.unescapedChar)
+
+test("Unescaped char succeeds", t => {
+  switch run("a") {
+  | Ok("a", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("b") {
+  | Ok("b", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("c") {
+  | Ok("c", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("d") {
+  | Ok("d", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("9") {
+  | Ok("9", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("-") {
+  | Ok("-", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+  switch run(" ") {
+  | Ok(" ", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+})
+
+test("Unescaped char partially succeeds", t => {
+  switch run(`a"`) {
+  | Ok("a", `"`) => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("a\\") {
+  | Ok("a", "\\") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("a\\\"") {
+  | Ok("a", "\\\"") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+})
+
+test("Unescaped char fails", t => {
+  switch run(`"`) {
+  | Ok(_) => t->fail(~message="Should not parse escaped char", ())
+  | Error(_) => t->pass()
+  }
+
+  switch run("\\") {
+  | Ok(_) => t->fail(~message="Should not parse escaped char", ())
+  | Error(_) => t->pass()
+  }
+})
+
+let run = P.run(Helpers.escapedChar)
+
+test("Escaped char succeeds", t => {
+  switch run("\\\"") {
+  | Ok(`"`, "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\\") {
+  | Ok("\\", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\/") {
+  | Ok("/", "") => t->pass()
+  | Ok(_, remaining) => t->fail(~message=`Should not succeed with "${remaining}" remaining`, ())
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("\b") {
+  | Ok("\b", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\n") {
+  | Ok("\n", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\r") {
+  | Ok("\r", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\t") {
+  | Ok("\t", "") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+})
+
+test("Escaped char partially succeeds", t => {
+  switch run("\\\"  ") {
+  | Ok(`"`, "  ") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\\hello") {
+  | Ok("\\", "hello") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\/\/") {
+  | Ok("/", "\/") => t->pass()
+  | Ok(_, remaining) => t->fail(~message=`Should not succeed with "${remaining}" remaining`, ())
+  | Error(_) => t->fail(~message="Should not fail", ())
+  }
+
+  switch run("\b-1234gfd") {
+  | Ok("\b", "-1234gfd") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\n l ll ll \n") {
+  | Ok("\n", " l ll ll \n") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\r\n") {
+  | Ok("\r", "\n") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+
+  switch run("\t\lll") {
+  | Ok("\t", "\lll") => t->pass()
+  | Ok(_) => t->fail()
+  | Error(_) => t->fail()
+  }
+})
+
+test("Escaped char fails", t => {
+  switch run(" \"") {
+  | Ok(_) => t->fail()
+  | Error(_) => t->pass()
+  }
+
+  switch run(" \\\"") {
+  | Ok(_) => t->fail()
+  | Error(_) => t->pass()
+  }
+
+  switch run("asfds\t") {
+  | Ok(_) => t->fail()
+  | Error(_) => t->pass()
+  }
+})
+
+let run = P.run(Helpers.unicodeChar)
+
+test("Unicode char succeeds", t => {
+  switch run("\u0041") {
+  | Ok("A", "") => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+
+  switch run("\u0031") {
+  | Ok("1", "") => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+
+  switch run("\u0028") {
+  | Ok("(", "") => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+
+  switch run("\u0101") {
+  | Ok(x, "") if x == Js.String.fromCharCode(257) /* "ā" */ => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+})
+
+test("Unicode char partially succeeds", t => {
+  switch run("\u0041asdf") {
+  | Ok("A", "asdf") => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+
+  switch run("\\u0041asdf") {
+  | Ok("A", "asdf") => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+
+  switch run("\u0031999") {
+  | Ok("1", "999") => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+
+  switch run("\u0028   lol") {
+  | Ok("(", "   lol") => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+
+  switch run("\u0101\u0101") {
+  | Ok(x, "\u0101") if x == Js.String.fromCharCode(257) /* "ā" */ => t->pass()
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
+  }
+})
+
+test("Unicode char fails", t => {
+  switch run("  \u0041asdf") {
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->pass(~message=shouldNotFail, ())
+  }
+
+  switch run("\\\u0031999") {
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->pass(~message=shouldNotFail, ())
+  }
+
+  switch run("l\u0028   lol") {
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->pass(~message=shouldNotFail, ())
+  }
+
+  switch run("/\u0101\u0101") {
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->pass(~message=shouldNotFail, ())
   }
 })

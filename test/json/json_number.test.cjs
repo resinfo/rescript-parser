@@ -14,7 +14,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
           var match$2 = match$1[0];
-          if (typeof match$2 === "number" || !(match$2._0 === "1234" && match$1[1] === "")) {
+          if (typeof match$2 === "number" || !(match$2.TAG === /* Number */0 && match$2._0 === "1234" && match$1[1] === "")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -26,7 +26,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         if (match$3.TAG === /* Ok */0) {
           var match$4 = match$3._0;
           var match$5 = match$4[0];
-          if (typeof match$5 === "number" || !(match$5._0 === "-1234" && match$4[1] === "")) {
+          if (typeof match$5 === "number" || !(match$5.TAG === /* Number */0 && match$5._0 === "-1234" && match$4[1] === "")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -38,7 +38,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         if (match$6.TAG === /* Ok */0) {
           var match$7 = match$6._0;
           var match$8 = match$7[0];
-          if (typeof match$8 === "number" || !(match$8._0 === "-0" && match$7[1] === "")) {
+          if (typeof match$8 === "number" || !(match$8.TAG === /* Number */0 && match$8._0 === "-0" && match$7[1] === "")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -50,7 +50,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         if (match$9.TAG === /* Ok */0) {
           var match$10 = match$9._0;
           var match$11 = match$10[0];
-          if (typeof match$11 === "number" || !(match$11._0 === "0" && match$10[1] === "")) {
+          if (typeof match$11 === "number" || !(match$11.TAG === /* Number */0 && match$11._0 === "0" && match$10[1] === "")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -62,7 +62,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         if (match$12.TAG === /* Ok */0) {
           var match$13 = match$12._0;
           var match$14 = match$13[0];
-          if (typeof match$14 === "number" || !(match$14._0 === "1234.1234" && match$13[1] === "")) {
+          if (typeof match$14 === "number" || !(match$14.TAG === /* Number */0 && match$14._0 === "1234.1234" && match$13[1] === "")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -74,7 +74,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         if (match$15.TAG === /* Ok */0) {
           var match$16 = match$15._0;
           var match$17 = match$16[0];
-          if (typeof match$17 === "number" || !(match$17._0 === "1234.1e1" && match$16[1] === "")) {
+          if (typeof match$17 === "number" || !(match$17.TAG === /* Number */0 && match$17._0 === "1234.1e1" && match$16[1] === "")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -88,7 +88,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         }
         var match$19 = match$18._0;
         var match$20 = match$19[0];
-        if (typeof match$20 === "number" || !(match$20._0 === "0.12E-6543" && match$19[1] === "")) {
+        if (typeof match$20 === "number" || !(match$20.TAG === /* Number */0 && match$20._0 === "0.12E-6543" && match$19[1] === "")) {
           return Ava.fail(t, "Should not succeed otherwise", undefined);
         } else {
           return Ava.pass(t, undefined, undefined);
@@ -100,7 +100,7 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
           var match$2 = match$1[0];
-          if (typeof match$2 === "number" || !(match$2._0 === "0.12E-6543" && match$1[1] === "hello")) {
+          if (typeof match$2 === "number" || !(match$2.TAG === /* Number */0 && match$2._0 === "0.12E-6543" && match$1[1] === "hello")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -112,7 +112,7 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
         if (match$3.TAG === /* Ok */0) {
           var match$4 = match$3._0;
           var match$5 = match$4[0];
-          if (typeof match$5 === "number" || !(match$5._0 === "111" && match$4[1] === "hello")) {
+          if (typeof match$5 === "number" || !(match$5.TAG === /* Number */0 && match$5._0 === "111" && match$4[1] === "hello")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -124,7 +124,7 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
         if (match$6.TAG === /* Ok */0) {
           var match$7 = match$6._0;
           var match$8 = match$7[0];
-          if (typeof match$8 === "number" || !(match$8._0 === "-533.1" && match$7[1] === "hello")) {
+          if (typeof match$8 === "number" || !(match$8.TAG === /* Number */0 && match$8._0 === "-533.1" && match$7[1] === "hello")) {
             Ava.fail(t, "Should not succeed otherwise", undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -138,7 +138,7 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
         }
         var match$10 = match$9._0;
         var match$11 = match$10[0];
-        if (typeof match$11 === "number" || !(match$11._0 === "-1234.1" && match$10[1] === "..1hello")) {
+        if (typeof match$11 === "number" || !(match$11.TAG === /* Number */0 && match$11._0 === "-1234.1" && match$10[1] === "..1hello")) {
           return Ava.fail(t, "Should not succeed otherwise", undefined);
         } else {
           return Ava.pass(t, undefined, undefined);

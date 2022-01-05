@@ -2,20 +2,37 @@
 'use strict';
 
 var Parser = require("../../src/parser.cjs");
+var Belt_List = require("rescript/lib/js/belt_List.js");
 var Json_helpers = require("./json_helpers.cjs");
 
 function toString(t) {
-  if (typeof t !== "number") {
-    return "Number(" + t._0 + ")";
-  }
-  switch (t) {
-    case /* Null */0 :
-        return "Null";
-    case /* True */1 :
-        return "True";
-    case /* False */2 :
-        return "False";
-    
+  if (typeof t === "number") {
+    switch (t) {
+      case /* Null */0 :
+          return "Null";
+      case /* True */1 :
+          return "True";
+      case /* False */2 :
+          return "False";
+      
+    }
+  } else {
+    switch (t.TAG | 0) {
+      case /* Number */0 :
+          return "Number(" + t._0 + ")";
+      case /* String */1 :
+          return "String(" + t._0 + ")";
+      case /* Array */2 :
+          var stringify = function (xs) {
+            if (xs) {
+              return "\n" + toString(xs.hd) + stringify(xs.tl);
+            } else {
+              return "";
+            }
+          };
+          return "[" + stringify(t._0) + "]";
+      
+    }
   }
 }
 
@@ -36,10 +53,39 @@ var false_ = Parser.map(Parser.string("false"), (function (param) {
       }));
 
 var number = Parser.map(Json_helpers.number, (function (number) {
-        return /* Number */{
+        return {
+                TAG: /* Number */0,
                 _0: number
               };
       }));
+
+var string = Parser.map(Json_helpers.string, (function (string) {
+        return {
+                TAG: /* String */1,
+                _0: string
+              };
+      }));
+
+function array(xs) {
+  return {
+          TAG: /* Array */2,
+          _0: xs
+        };
+}
+
+var json = Parser.makeRecursive(function (p) {
+      var leftBracket = Parser.$$char(/* '[' */91);
+      var rightBracket = Parser.$$char(/* ']' */93);
+      var arr = Parser.map(Parser.map(Parser.between(Parser.separatedBy(Parser.many(p), Parser.$$char(/* ',' */44)), leftBracket, rightBracket), Belt_List.flatten), array);
+      return Parser.between(Parser.choice([
+                      arr,
+                      number,
+                      string,
+                      $$null,
+                      true_,
+                      false_
+                    ]), Json_helpers.manyWhitespace, Json_helpers.manyWhitespace);
+    });
 
 var P;
 
@@ -53,4 +99,7 @@ exports.$$null = $$null;
 exports.true_ = true_;
 exports.false_ = false_;
 exports.number = number;
+exports.string = string;
+exports.array = array;
+exports.json = json;
 /* null Not a pure module */
