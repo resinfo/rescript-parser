@@ -6,11 +6,11 @@ var Json = require("./json.cjs");
 var Parser = require("../../src/parser.cjs");
 
 function run(param) {
-  return Parser.run(Json.string, param);
+  return Parser.run(Json.json, param);
 }
 
 Ava.test("[JSON] String succeeds", (function (t) {
-        var msg = Parser.run(Json.string, "\"1\"");
+        var msg = Parser.run(Json.json, "\"1\"");
         if (msg.TAG === /* Ok */0) {
           var match = msg._0;
           var match$1 = match[0];
@@ -22,7 +22,7 @@ Ava.test("[JSON] String succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail with \"" + msg._0 + "\"", undefined);
         }
-        var msg$1 = Parser.run(Json.string, "\"hello\"");
+        var msg$1 = Parser.run(Json.json, "\"hello\"");
         if (msg$1.TAG === /* Ok */0) {
           var match$2 = msg$1._0;
           var match$3 = match$2[0];
@@ -34,7 +34,7 @@ Ava.test("[JSON] String succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail with \"" + msg$1._0 + "\"", undefined);
         }
-        var msg$2 = Parser.run(Json.string, "\"   \"");
+        var msg$2 = Parser.run(Json.json, "\"   \"");
         if (msg$2.TAG === /* Ok */0) {
           var match$4 = msg$2._0;
           var match$5 = match$4[0];
@@ -46,7 +46,7 @@ Ava.test("[JSON] String succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail with \"" + msg$2._0 + "\"", undefined);
         }
-        var msg$3 = Parser.run(Json.string, "\"\"");
+        var msg$3 = Parser.run(Json.json, "\"\"");
         if (msg$3.TAG === /* Ok */0) {
           var match$6 = msg$3._0;
           var match$7 = match$6[0];
@@ -58,7 +58,7 @@ Ava.test("[JSON] String succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail with \"" + msg$3._0 + "\"", undefined);
         }
-        var msg$4 = Parser.run(Json.string, "\"\u0050\"");
+        var msg$4 = Parser.run(Json.json, "\"\u0050\"");
         if (msg$4.TAG === /* Ok */0) {
           var match$8 = msg$4._0;
           var match$9 = match$8[0];
@@ -70,7 +70,7 @@ Ava.test("[JSON] String succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail with \"" + msg$4._0 + "\"", undefined);
         }
-        var msg$5 = Parser.run(Json.string, "\"\u0050\u0069\u0061n\u006F\"");
+        var msg$5 = Parser.run(Json.json, "\"\u0050\u0069\u0061n\u006F\"");
         if (msg$5.TAG !== /* Ok */0) {
           return Ava.fail(t, "Should not fail with \"" + msg$5._0 + "\"", undefined);
         }
