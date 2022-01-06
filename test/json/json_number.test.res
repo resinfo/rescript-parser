@@ -3,7 +3,7 @@ open Ava
 module P = Parser
 
 let number = Json.number
-let run = P.run(number)
+let run = P.run(Json.json)
 
 test("[JSON] Number succeeds", t => {
   switch run("1234") {
@@ -76,17 +76,12 @@ test("[JSON] Number partially succeeds", t => {
 })
 
 test("[JSON] Number fails", t => {
-  switch run(" 1") {
+  switch run("_-1") {
   | Ok(_, _) => t->fail(~message="Should not succeed", ())
   | Error(_) => t->pass()
   }
 
-  switch run(" -1") {
-  | Ok(_, _) => t->fail(~message="Should not succeed", ())
-  | Error(_) => t->pass()
-  }
-
-  switch run(" 0.12E-6543") {
+  switch run("--0.12E-6543") {
   | Ok(_, _) => t->fail(~message="Should not succeed", ())
   | Error(_) => t->pass()
   }

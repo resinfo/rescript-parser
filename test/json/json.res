@@ -110,6 +110,7 @@ type rec t =
   | Null
   | True
   | False
+  | Object(list<(string, t)>)
   | Number(string)
   | String(string)
   | Array(list<t>)
@@ -121,6 +122,7 @@ let rec toString = t => {
   | False => "False"
   | Number(amount) => `Number(${amount})`
   | String(string) => `String(${string})`
+  | Object(_xs) => `Object()`
   | Array(xs) => {
       let rec stringify = xs => {
         switch xs {
@@ -139,50 +141,57 @@ module Helpers = Json_helpers
 
 let _charToString = c => c->int_of_char->Js.String.fromCharCode
 
-let null = P.string("null")->P.map(_ => Null)
-let true_ = P.string("true")->P.map(_ => True)
-let false_ = P.string("false")->P.map(_ => False)
-
-let number = Helpers.number->P.map(number => Number(number))
-let string = Helpers.string->P.map(string => String(string))
+let null = _ => Null
+let true_ = _ => True
+let false_ = _ => False
+let number = number => Number(number)
+let string = string => String(string)
 let array = xs => Array(xs)
+let object = xs => Object(xs)
 
 let json = P.makeRecursive(p => {
   let {manyWhitespace} = module(Helpers)
 
-  let leftBracket = P.char('[')
-  let rightBracket = P.char(']')
+  let arrayElements = {
+    let empty = manyWhitespace->P.between(P.char('['), P.char(']'))->P.map(_ => list{})
 
-  let arr =
-    P.many(p)
-    ->P.separatedBy(P.char(','))
-    ->P.between(leftBracket, rightBracket)
-    ->P.map(Belt.List.flatten(_))
-    ->P.map(array)
-  // let elements = p->P.separatedBy1(commaWrappedInWhitespace)
+    let nonEmpty =
+      P.many(p)
+      ->P.separatedBy(P.char(','))
+      ->P.between(P.char('['), P.char(']'))
+      ->P.map(Belt.List.flatten(_))
 
-  // let array = {
-  //   let leftBracketWithWhitespace = leftBracket->P.keepRight(manyWhitespace)
-  //   let rightBracketWithWhitespace = rightBracket->P.keepLeft(manyWhitespace)
+    P.choice([empty, nonEmpty])
+  }
 
-  //   let element = p->P.between(manyWhitespace, manyWhitespace)
-  //   let elements = P.makeRecursive(p => {
-  //     P.choice([
-  //       //
-  //       element,
-  //       // element
-  //       // ->P.andThen(P.char(','))
-  //       // ->P.andThen(p)
-  //       P.many(element)->P.separatedBy1(commaWrappedInWhitespace)->P.map(xs => Array(list{})),
-  //     ])
-  //   })
+  let objectPairs = {
+    let nonEmpty = {
+      let keyValuePair =
+        Helpers.string
+        ->P.between(manyWhitespace, manyWhitespace)
+        ->P.keepLeft(P.char(':'))
+        ->P.andThen(p)
 
-  //   P.choice([
-  //     //
-  //     elements->P.between(leftBracket, rightBracket)->P.map(xs => Array(list{xs})),
-  //     manyWhitespace->P.between(leftBracket, rightBracket)->P.map(_ => Array(list{})),
-  //   ])
-  // }
+      P.many(keyValuePair)
+      ->P.separatedBy1(P.char(','))
+      ->P.map(Belt.List.flatten(_))
+      ->P.between(P.char('{'), P.char('}'))
+    }
 
-  P.choice([arr, number, string, null, true_, false_])->P.between(manyWhitespace, manyWhitespace)
+    let empty = {
+      manyWhitespace->P.between(P.char('{'), P.char('}'))->P.map(_ => list{})
+    }
+
+    P.choice([empty, nonEmpty])
+  }
+
+  P.choice([
+    objectPairs->P.map(object),
+    arrayElements->P.map(array),
+    Helpers.number->P.map(number),
+    Helpers.string->P.map(string),
+    P.string("null")->P.map(null),
+    P.string("true")->P.map(true_),
+    P.string("false")->P.map(false_),
+  ])->P.between(manyWhitespace, manyWhitespace)
 })

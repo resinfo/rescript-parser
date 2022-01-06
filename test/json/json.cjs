@@ -18,11 +18,13 @@ function toString(t) {
     }
   } else {
     switch (t.TAG | 0) {
-      case /* Number */0 :
+      case /* Object */0 :
+          return "Object()";
+      case /* Number */1 :
           return "Number(" + t._0 + ")";
-      case /* String */1 :
+      case /* String */2 :
           return "String(" + t._0 + ")";
-      case /* Array */2 :
+      case /* Array */3 :
           var stringify = function (xs) {
             if (xs) {
               return "\n" + toString(xs.hd) + stringify(xs.tl);
@@ -40,50 +42,72 @@ function _charToString(c) {
   return String.fromCharCode(c);
 }
 
-var $$null = Parser.map(Parser.string("null"), (function (param) {
-        return /* Null */0;
-      }));
+function $$null(param) {
+  return /* Null */0;
+}
 
-var true_ = Parser.map(Parser.string("true"), (function (param) {
-        return /* True */1;
-      }));
+function true_(param) {
+  return /* True */1;
+}
 
-var false_ = Parser.map(Parser.string("false"), (function (param) {
-        return /* False */2;
-      }));
+function false_(param) {
+  return /* False */2;
+}
 
-var number = Parser.map(Json_helpers.number, (function (number) {
-        return {
-                TAG: /* Number */0,
-                _0: number
-              };
-      }));
+function number(number$1) {
+  return {
+          TAG: /* Number */1,
+          _0: number$1
+        };
+}
 
-var string = Parser.map(Json_helpers.string, (function (string) {
-        return {
-                TAG: /* String */1,
-                _0: string
-              };
-      }));
+function string(string$1) {
+  return {
+          TAG: /* String */2,
+          _0: string$1
+        };
+}
 
 function array(xs) {
   return {
-          TAG: /* Array */2,
+          TAG: /* Array */3,
+          _0: xs
+        };
+}
+
+function object(xs) {
+  return {
+          TAG: /* Object */0,
           _0: xs
         };
 }
 
 var json = Parser.makeRecursive(function (p) {
-      var leftBracket = Parser.$$char(/* '[' */91);
-      var rightBracket = Parser.$$char(/* ']' */93);
-      var arr = Parser.map(Parser.map(Parser.between(Parser.separatedBy(Parser.many(p), Parser.$$char(/* ',' */44)), leftBracket, rightBracket), Belt_List.flatten), array);
+      var empty = Parser.map(Parser.between(Json_helpers.manyWhitespace, Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93)), (function (param) {
+              return /* [] */0;
+            }));
+      var nonEmpty = Parser.map(Parser.between(Parser.separatedBy(Parser.many(p), Parser.$$char(/* ',' */44)), Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93)), Belt_List.flatten);
+      var arrayElements = Parser.choice([
+            empty,
+            nonEmpty
+          ]);
+      var keyValuePair = Parser.andThen(Parser.keepLeft(Parser.between(Json_helpers.string, Json_helpers.manyWhitespace, Json_helpers.manyWhitespace), Parser.$$char(/* ':' */58)), p);
+      var nonEmpty$1 = Parser.between(Parser.map(Parser.separatedBy1(Parser.many(keyValuePair), Parser.$$char(/* ',' */44)), Belt_List.flatten), Parser.$$char(/* '{' */123), Parser.$$char(/* '}' */125));
+      var empty$1 = Parser.map(Parser.between(Json_helpers.manyWhitespace, Parser.$$char(/* '{' */123), Parser.$$char(/* '}' */125)), (function (param) {
+              return /* [] */0;
+            }));
+      var objectPairs = Parser.choice([
+            empty$1,
+            nonEmpty$1
+          ]);
       return Parser.between(Parser.choice([
-                      arr,
-                      number,
-                      string,
-                      $$null,
-                      true_,
-                      false_
+                      Parser.map(objectPairs, object),
+                      Parser.map(arrayElements, array),
+                      Parser.map(Json_helpers.number, number),
+                      Parser.map(Json_helpers.string, string),
+                      Parser.map(Parser.string("null"), $$null),
+                      Parser.map(Parser.string("true"), true_),
+                      Parser.map(Parser.string("false"), false_)
                     ]), Json_helpers.manyWhitespace, Json_helpers.manyWhitespace);
     });
 
@@ -101,5 +125,6 @@ exports.false_ = false_;
 exports.number = number;
 exports.string = string;
 exports.array = array;
+exports.object = object;
 exports.json = json;
-/* null Not a pure module */
+/* json Not a pure module */

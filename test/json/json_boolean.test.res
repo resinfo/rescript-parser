@@ -1,9 +1,7 @@
 module P = Parser
 
-let true_ = Json.true_
-
 Ava.test("[JSON] valid true", t => {
-  let result = P.run(true_, "true")
+  let result = P.run(Json.json, "true")
 
   switch result {
   | Ok((True, "")) => t->Ava.pass()
@@ -17,7 +15,7 @@ Ava.test("[JSON] valid true", t => {
 })
 
 Ava.test("[JSON] invalid true", t => {
-  let result = P.run(true_, "ttrue")
+  let result = P.run(Json.json, "ttrue")
 
   switch result {
   | Ok((Null, _remaining)) => t->Ava.fail()
@@ -25,15 +23,15 @@ Ava.test("[JSON] invalid true", t => {
   | Error(_) => t->Ava.pass(~message=`Parsing "true_" should return an error message`, ())
   }
 
-  let result = P.run(true_, "false")
+  let result = P.run(Json.json, "false")
 
   switch result {
   | Ok((True, _remaining)) => t->Ava.fail()
-  | Ok((_ast, _)) => t->Ava.fail()
+  | Ok((_ast, _)) => t->Ava.pass(~message=`Parsing "true_" should return an error message`, ())
   | Error(_) => t->Ava.pass(~message=`Parsing "true_" should return an error message`, ())
   }
 
-  let result = P.run(true_, "{}}")
+  let result = P.run(Json.json, "-true")
 
   switch result {
   | Ok((True, _remaining)) => t->Ava.fail()
@@ -42,10 +40,8 @@ Ava.test("[JSON] invalid true", t => {
   }
 })
 
-let false_ = Json.false_
-
 Ava.test("[JSON] valid false", t => {
-  let result = P.run(false_, "false")
+  let result = P.run(Json.json, "false")
 
   switch result {
   | Ok((False, "")) => t->Ava.pass()
@@ -59,7 +55,7 @@ Ava.test("[JSON] valid false", t => {
 })
 
 Ava.test("[JSON] invalid false", t => {
-  let result = P.run(false_, "tfalse")
+  let result = P.run(Json.json, "tfalse")
 
   switch result {
   | Ok((False, _remaining)) => t->Ava.fail()
@@ -67,15 +63,7 @@ Ava.test("[JSON] invalid false", t => {
   | Error(_) => t->Ava.pass(~message=`Parsing "false_" should return an error message`, ())
   }
 
-  let result = P.run(false_, " true")
-
-  switch result {
-  | Ok((False, _remaining)) => t->Ava.fail()
-  | Ok((_ast, _)) => t->Ava.fail()
-  | Error(_) => t->Ava.pass(~message=`Parsing "false_" should return an error message`, ())
-  }
-
-  let result = P.run(false_, "{}}")
+  let result = P.run(Json.json, "{false")
 
   switch result {
   | Ok((False, _remaining)) => t->Ava.fail()

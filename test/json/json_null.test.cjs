@@ -4,50 +4,128 @@
 var Ava = require("rescript-ava/src/ava.cjs");
 var Json = require("./json.cjs");
 var Parser = require("../../src/parser.cjs");
+var Belt_Array = require("rescript/lib/js/belt_Array.js");
 
-Ava.test("[JSON] valid null", (function (t) {
-        var result = Parser.run(Json.$$null, "null");
-        if (result.TAG !== /* Ok */0) {
-          return Ava.fail(t, "Parsing \"null\" returns an error of message: \"" + result._0 + "\"", undefined);
-        }
-        var match = result._0;
-        var ast = match[0];
-        if (ast !== 0) {
-          return Ava.fail(t, "Parsing \"null\" returns an incorrect AST of " + Json.toString(ast), undefined);
-        }
-        var remaining = match[1];
-        if (remaining === "") {
-          return Ava.pass(t, undefined, undefined);
-        } else {
-          return Ava.fail(t, "Parsing \"null\" should return an empty string but got \"" + remaining + "\"", undefined);
-        }
+function run(param) {
+  return Parser.run(Json.json, param);
+}
+
+var validNulls = [
+  [
+    "1",
+    "null"
+  ],
+  [
+    "2",
+    "     null"
+  ],
+  [
+    "3",
+    "     null           "
+  ],
+  [
+    "4",
+    "null           "
+  ]
+];
+
+Belt_Array.forEach(validNulls, (function (param) {
+        var input = param[1];
+        return Ava.test("[JSON] Valid \"null\" " + param[0], (function (t) {
+                      var error = Parser.run(Json.json, input);
+                      if (error.TAG !== /* Ok */0) {
+                        return Ava.fail(t, "Shouldn't fail with: \"" + error._0 + "\"", undefined);
+                      }
+                      var match = error._0;
+                      var ast = match[0];
+                      if (ast !== 0) {
+                        return Ava.fail(t, "Shouldn't succeed with \"" + Json.toString(ast) + "\"", undefined);
+                      }
+                      var rest = match[1];
+                      if (rest === "") {
+                        return Ava.pass(t, undefined, undefined);
+                      } else {
+                        return Ava.fail(t, "Shouldn't succeed with \"" + rest + "\" remaining", undefined);
+                      }
+                    }));
       }));
 
-Ava.test("[JSON] invalid null", (function (t) {
-        var result = Parser.run(Json.$$null, "tnull");
-        if (result.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, "Parsing \"null\" should return an error message", undefined);
-        }
-        var result$1 = Parser.run(Json.$$null, "  ");
-        if (result$1.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, "Parsing \"null\" should return an error message", undefined);
-        }
-        var result$2 = Parser.run(Json.$$null, "no");
-        if (result$2.TAG === /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        } else {
-          return Ava.pass(t, "Parsing \"null\" should return an error message", undefined);
-        }
+var partiallyValidNulls = [
+  [
+    "1",
+    "nulla",
+    "a"
+  ],
+  [
+    "2",
+    "     null   ___",
+    "___"
+  ],
+  [
+    "3",
+    "     null}[]",
+    "}[]"
+  ],
+  [
+    "4",
+    "null           +",
+    "+"
+  ]
+];
+
+Belt_Array.forEach(partiallyValidNulls, (function (param) {
+        var remaining = param[2];
+        var input = param[1];
+        return Ava.test("[JSON] Partially valid \"null\" " + param[0], (function (t) {
+                      var error = Parser.run(Json.json, input);
+                      if (error.TAG !== /* Ok */0) {
+                        return Ava.fail(t, "Shouldn't fail with: \"" + error._0 + "\"", undefined);
+                      }
+                      var match = error._0;
+                      var ast = match[0];
+                      if (ast === 0 && match[1] === remaining) {
+                        return Ava.pass(t, undefined, undefined);
+                      }
+                      return Ava.fail(t, "Shouldn't succeed with \"" + Json.toString(ast) + "\" and \"" + match[1] + "\" remaining", undefined);
+                    }));
+      }));
+
+var invalid = [
+  [
+    "1",
+    "."
+  ],
+  [
+    "2",
+    "-null"
+  ],
+  [
+    "3",
+    "     ]null}[]"
+  ],
+  [
+    "4",
+    "tnull"
+  ]
+];
+
+Belt_Array.forEach(invalid, (function (param) {
+        var input = param[1];
+        return Ava.test("[JSON] Invalid \"null\" " + param[0], (function (t) {
+                      var error = Parser.run(Json.json, input);
+                      if (error.TAG !== /* Ok */0) {
+                        return Ava.pass(t, "Should fail with: \"" + error._0 + "\"", undefined);
+                      }
+                      var match = error._0;
+                      return Ava.fail(t, "Shouldn't succeed with \"" + Json.toString(match[0]) + "\" and \"" + match[1] + "\" remaining", undefined);
+                    }));
       }));
 
 var P;
 
-var $$null = Json.$$null;
-
 exports.P = P;
-exports.$$null = $$null;
+exports.run = run;
+exports.validNulls = validNulls;
+exports.partiallyValidNulls = partiallyValidNulls;
+exports.invalid = invalid;
 /*  Not a pure module */

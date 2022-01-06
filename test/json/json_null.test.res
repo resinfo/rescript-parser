@@ -1,43 +1,60 @@
+open Ava
 module P = Parser
 
-let null = Json.null
+let run = P.run(Json.json)
 
-Ava.test("[JSON] valid null", t => {
-  let result = P.run(null, "null")
+let validNulls = [
+  //
+  ("1", "null"),
+  ("2", "     null"),
+  ("3", "     null           "),
+  ("4", "null           "),
+]
 
-  switch result {
-  | Ok((Null, "")) => t->Ava.pass()
-  | Ok((Null, remaining)) =>
-    t->Ava.fail(~message=`Parsing "null" should return an empty string but got "${remaining}"`, ())
-  | Ok((ast, _)) =>
-    t->Ava.fail(~message=`Parsing "null" returns an incorrect AST of ${Json.toString(ast)}`, ())
-  | Error(error) =>
-    t->Ava.fail(~message=`Parsing "null" returns an error of message: "${error}"`, ())
-  }
+validNulls->Belt.Array.forEach(((index, input)) => {
+  test(`[JSON] Valid "null" ${index}`, t => {
+    switch run(input) {
+    | Ok((Null, "")) => t->pass()
+    | Ok((Null, rest)) => t->fail(~message=`Shouldn't succeed with "${rest}" remaining`, ())
+    | Ok((ast, _)) => t->fail(~message=`Shouldn't succeed with "${Json.toString(ast)}"`, ())
+    | Error(error) => t->fail(~message=`Shouldn't fail with: "${error}"`, ())
+    }
+  })
 })
 
-Ava.test("[JSON] invalid null", t => {
-  let result = P.run(null, "tnull")
+let partiallyValidNulls = [
+  //
+  ("1", "nulla", "a"),
+  ("2", "     null   ___", "___"),
+  ("3", "     null}[]", "}[]"),
+  ("4", "null           +", "+"),
+]
 
-  switch result {
-  | Ok((Null, _remaining)) => t->Ava.fail()
-  | Ok((_ast, _)) => t->Ava.fail()
-  | Error(_) => t->Ava.pass(~message=`Parsing "null" should return an error message`, ())
-  }
+partiallyValidNulls->Belt.Array.forEach(((index, input, remaining)) => {
+  test(`[JSON] Partially valid "null" ${index}`, t => {
+    switch run(input) {
+    | Ok((Null, rest)) if rest == remaining => t->pass()
+    | Ok((ast, rest)) =>
+      t->fail(~message=`Shouldn't succeed with "${ast->Json.toString}" and "${rest}" remaining`, ())
+    | Error(error) => t->fail(~message=`Shouldn't fail with: "${error}"`, ())
+    }
+  })
+})
 
-  let result = P.run(null, "  ")
+let invalid = [
+  //
+  ("1", "."),
+  ("2", "-null"),
+  ("3", "     ]null}[]"),
+  ("4", "tnull"),
+]
 
-  switch result {
-  | Ok((Json.Null, _remaining)) => t->Ava.fail()
-  | Ok((_ast, _)) => t->Ava.fail()
-  | Error(_) => t->Ava.pass(~message=`Parsing "null" should return an error message`, ())
-  }
-
-  let result = P.run(null, "no")
-
-  switch result {
-  | Ok((Json.Null, _remaining)) => t->Ava.fail()
-  | Ok((_ast, _)) => t->Ava.fail()
-  | Error(_) => t->Ava.pass(~message=`Parsing "null" should return an error message`, ())
-  }
+invalid->Belt.Array.forEach(((index, input)) => {
+  test(`[JSON] Invalid "null" ${index}`, t => {
+    switch run(input) {
+    | Ok((ast, rest)) =>
+      t->fail(~message=`Shouldn't succeed with "${ast->Json.toString}" and "${rest}" remaining`, ())
+    | Error(error) => t->pass(~message=`Should fail with: "${error}"`, ())
+    }
+  })
 })
