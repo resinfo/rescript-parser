@@ -12,10 +12,10 @@ function run(param) {
 }
 
 function readFiles(dirname) {
-  return Belt_Array.map(Belt_Array.map(Fs.readdirSync("test/inputs/" + dirname), (function (name) {
+  return Belt_Array.map(Belt_Array.map(Fs.readdirSync("test/json/inputs/" + dirname), (function (name) {
                     return [
                             name,
-                            "test/inputs/" + dirname + "/" + name
+                            "test/json/inputs/" + dirname + "/" + name
                           ];
                   })), (function (param) {
                 return [
@@ -33,7 +33,7 @@ var partials = readFiles("partials");
 
 Belt_Array.forEach(passes, (function (param) {
         var file = param[1];
-        return Ava.test("[JSON] File \"" + param[0] + "\" success", (function (t) {
+        return Ava.skip("[JSON] File \"" + param[0] + "\" success", (function (t) {
                       var msg = Parser.run(Json.json, file);
                       if (msg.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with \"" + msg._0 + "\"", undefined);
@@ -49,7 +49,7 @@ Belt_Array.forEach(passes, (function (param) {
 
 Belt_Array.forEach(partials, (function (param) {
         var file = param[1];
-        return Ava.test("[JSON] File \"" + param[0] + "\" partial success", (function (t) {
+        return Ava.skip("[JSON] File \"" + param[0] + "\" partial success", (function (t) {
                       var msg = Parser.run(Json.json, file);
                       if (msg.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with \"" + msg._0 + "\"", undefined);
