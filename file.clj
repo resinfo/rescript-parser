@@ -16,6 +16,12 @@ true
 
 (let hello (lam [a b] 12))
 (fun hello [a b] 12)
+(module name {
+  (let world "hello")
+
+  (export hello world)
+  (export world "hello")
+})
 
 (fun fib n {
   (fun _fib left right n 
@@ -45,7 +51,7 @@ true
     )
   )
 
-  _fib(0, 1, n)
+  (_fib 0 1 n)
 })
 
 

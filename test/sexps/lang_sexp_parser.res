@@ -30,7 +30,7 @@ type rec definition =
   | DFunction(identifier, list<functionArg>, literal)
   | DModule(module_)
   | DExport(exportName, literal)
-and module_ = Module(moduleName, list<definition>, option<list<(exportName, literal)>>)
+and module_ = Module(moduleName, list<definition>, list<(exportName, literal)>)
 
 let charListToString = ls =>
   ls->Belt.List.map(Char.escaped)->Belt.List.reduce("", Js.String2.concat)
@@ -157,6 +157,68 @@ let literal = P.makeRecursive(p => {
   ])->betweenManyWhitespace
 })
 
+let definition = P.makeRecursive(def => {
+  let export_ = {
+    P.string("export")
+    ->betweenManyWhitespace
+    ->P.keepRight(identifier->betweenManyWhitespace)
+    ->P.andThen(literal)
+    ->betweenParens
+  }
+
+  let variable = {
+    P.string("let")
+    ->betweenManyWhitespace
+    ->P.keepRight(identifier->betweenManyWhitespace)
+    ->P.andThen(literal)
+    ->betweenParens
+  }
+
+  let fn = {
+    open Parser
+    let keyword = string("fun")->betweenManyWhitespace
+    let name = identifier->betweenManyWhitespace
+    let arg = identifier->betweenManyWhitespace
+    let args = many(arg)->betweenBrackets->betweenManyWhitespace
+
+    keyword->keepRight(name)->andThen(args)->andThen(literal)->betweenParens
+  }
+
+  let module_ = {
+    P.string("module")
+    ->betweenManyWhitespace
+    ->P.keepRight(identifier->betweenManyWhitespace)
+    ->P.andThen(P.many(def)->betweenBraces)
+    ->betweenParens
+  }
+
+  let moduleDef = {
+    module_->P.map(((name, defs)) => {
+      let (exports, defs) = defs->Belt.List.partition(x => {
+        switch x {
+        | DExport(_) => true
+        | _ => false
+        }
+      })
+      let exports = exports->Belt.List.keepMap(x => {
+        switch x {
+        | DExport(name, literal) => Some(name, literal)
+        | _ => None
+        }
+      })
+
+      Module(name, defs, exports)
+    })
+  }
+
+  P.choice([
+    variable->P.map(((identifier, literal)) => DVariable(identifier, literal)),
+    fn->P.map((((name, args), body)) => DFunction(name, args, body)),
+    moduleDef->P.map(m => DModule(m)),
+    export_->P.map(((name, literal)) => DExport(name, literal)),
+  ])->betweenManyWhitespace
+})
+
 let rec literalToString = literal => {
   let concat = Js.String2.concat
   let indent = Js.String2.concat("\n\t")
@@ -225,7 +287,6 @@ and functionToString = fn => {
     }
   }
 }
-
 and blockToString = block => {
   switch block {
   | BVariable(identifier, literal) => `BVariable(${identifier}, ${literal->literalToString})`
@@ -235,46 +296,5 @@ and blockToString = block => {
       `BFunction(${name}, ${args}, ${body->literalToString})`
     }
   | BLiteral(literal) => `BLiteral(${literal->literalToString})`
-  }
-}
-
-let parser = {
-  let identifier = P.choice([uppercase, lowercase])->P.many->P.map(charListToString)
-
-  // let literal = {
-  //   P.makeRecursive(literal => {
-  //     let number = P.atLeastOne(digit)->P.map(charListToString)->P.map(n => LNumber(n))
-  //     let string = {
-  //       let validChar = P.choice([digit, uppercase, lowercase])->P.many->P.map(charListToString)
-
-  //       validChar->P.between(doubleQuote, doubleQuote)->P.map(s => LString(s))
-  //     }
-
-  //     let true_ = P.string("true")->P.map(_ => LTrue)
-  //     let false_ = P.string("false")->P.map(_ => LFalse)
-  //     let array = {
-  //       P.many(literal)->P.between(P.char('['), P.char(']'))->P.map(xs => LArray(xs))
-  //     }
-
-  //     P.choice([string, number, true_, false_, array])->betweenManyWhitespace
-  //   })
-  // }
-
-  let definition = {
-    P.char('a')
-  }
-  and module_ = {
-    let defs = {
-      P.between(_, P.char('{'), P.char('}'))
-    }
-
-    P.char('(')
-    ->P.keepRight(manyWhitespace)
-    ->P.keepRight(P.string("module"))
-    ->P.keepRight(manyWhitespace)
-    ->P.keepRight(identifier)
-    ->P.keepLeft(manyWhitespace)
-    ->P.keepLeft(P.char(')'))
-    ->P.map(xs => Module("", list{}, None))
   }
 }

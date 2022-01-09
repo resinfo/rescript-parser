@@ -279,30 +279,78 @@ let successes = [
       None,
     ),
   ),
+  (
+    "multiline block w/ whitespace",
+    `{
+      (let world "world")
+      (let bar (concat "hello" world))
 
-  // (
-  //   "multiline block w/ whitespace",
-  //   `{
-  //     (let world "world")
-  //     (let bar (concat "hello " world))
+      bar
+    }`,
+    LBlock(
+      list{
+        BVariable("world", LString("world")),
+        BVariable(
+          "bar",
+          LExecution(
+            FNamed("concat"),
+            //
+            list{LString("hello"), LIdentifier("world")},
+          ),
+        ),
+      },
+      Some(LIdentifier("bar")),
+    ),
+  ),
+  (
+    "multiline return lambda",
+    `
+  {
+    (let x 1)
+    
+    (lam [a] (add a x))
+  }
+  `,
+    LBlock(
+      list{BVariable("x", LNumber("1"))},
+      Some(
+        LLambda(
+          list{"a"},
+          LExecution(
+            FNamed("add"),
+            list{
+              //
+              LIdentifier("a"),
+              LIdentifier("x"),
+            },
+          ),
+        ),
+      ),
+    ),
+  ),
+  (
+    "simple function block w/ return",
+    `
+  {
+    (fun hello [name] "hello")
 
-  //     bar
-  //   }`,
-  //   LBlock(
-  //     list{
-  //       BVariable("world", LString("world")),
-  //       BVariable(
-  //         "bar",
-  //         LExecution(
-  //           FNamed("concat"),
-  //           //
-  //           list{LString("hello "), LIdentifier("world")},
-  //         ),
-  //       ),
-  //     },
-  //     Some(LIdentifier("bar")),
-  //   ),
-  // ),
+    hello
+  }`,
+    LBlock(
+      list{
+        BFunction(
+          "hello",
+          list{
+            //
+            "name",
+          },
+          LString("hello"),
+        ),
+      },
+      Some(LIdentifier("hello")),
+    ),
+  ),
+  ("simple nested block", `{ { 1 } }`, LBlock(list{}, Some(LBlock(list{}, Some(LNumber("1")))))),
 ]
 
 successes->Belt.Array.forEach(((name, input, expected)) => {

@@ -794,6 +794,141 @@ var successes = [
       },
       _1: undefined
     }
+  ],
+  [
+    "multiline block w/ whitespace",
+    "{\n      (let world \"world\")\n      (let bar (concat \"hello\" world))\n\n      bar\n    }",
+    {
+      TAG: /* LBlock */7,
+      _0: {
+        hd: {
+          TAG: /* BVariable */0,
+          _0: "world",
+          _1: {
+            TAG: /* LString */2,
+            _0: "world"
+          }
+        },
+        tl: {
+          hd: {
+            TAG: /* BVariable */0,
+            _0: "bar",
+            _1: {
+              TAG: /* LExecution */6,
+              _0: {
+                TAG: /* FNamed */0,
+                _0: "concat"
+              },
+              _1: {
+                hd: {
+                  TAG: /* LString */2,
+                  _0: "hello"
+                },
+                tl: {
+                  hd: {
+                    TAG: /* LIdentifier */0,
+                    _0: "world"
+                  },
+                  tl: /* [] */0
+                }
+              }
+            }
+          },
+          tl: /* [] */0
+        }
+      },
+      _1: {
+        TAG: /* LIdentifier */0,
+        _0: "bar"
+      }
+    }
+  ],
+  [
+    "multiline return lambda",
+    "\n  {\n    (let x 1)\n    \n    (lam [a] (add a x))\n  }\n  ",
+    {
+      TAG: /* LBlock */7,
+      _0: {
+        hd: {
+          TAG: /* BVariable */0,
+          _0: "x",
+          _1: {
+            TAG: /* LNumber */1,
+            _0: "1"
+          }
+        },
+        tl: /* [] */0
+      },
+      _1: {
+        TAG: /* LLambda */5,
+        _0: {
+          hd: "a",
+          tl: /* [] */0
+        },
+        _1: {
+          TAG: /* LExecution */6,
+          _0: {
+            TAG: /* FNamed */0,
+            _0: "add"
+          },
+          _1: {
+            hd: {
+              TAG: /* LIdentifier */0,
+              _0: "a"
+            },
+            tl: {
+              hd: {
+                TAG: /* LIdentifier */0,
+                _0: "x"
+              },
+              tl: /* [] */0
+            }
+          }
+        }
+      }
+    }
+  ],
+  [
+    "simple function block w/ return",
+    "\n  {\n    (fun hello [name] \"hello\")\n\n    hello\n  }",
+    {
+      TAG: /* LBlock */7,
+      _0: {
+        hd: {
+          TAG: /* BFunction */1,
+          _0: "hello",
+          _1: {
+            hd: "name",
+            tl: /* [] */0
+          },
+          _2: {
+            TAG: /* LString */2,
+            _0: "hello"
+          }
+        },
+        tl: /* [] */0
+      },
+      _1: {
+        TAG: /* LIdentifier */0,
+        _0: "hello"
+      }
+    }
+  ],
+  [
+    "simple nested block",
+    "{ { 1 } }",
+    {
+      TAG: /* LBlock */7,
+      _0: /* [] */0,
+      _1: {
+        TAG: /* LBlock */7,
+        _0: /* [] */0,
+        _1: {
+          TAG: /* LNumber */1,
+          _0: "1"
+        }
+      }
+    }
   ]
 ];
 

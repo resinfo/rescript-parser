@@ -227,6 +227,71 @@ var literal = Parser.makeRecursive(function (p) {
                     ]), manyWhitespace, manyWhitespace);
     });
 
+var definition = Parser.makeRecursive(function (def) {
+      var export_ = Parser.between(Parser.andThen(Parser.keepRight(Parser.between(Parser.string("export"), manyWhitespace, manyWhitespace), Parser.between(identifier, manyWhitespace, manyWhitespace)), literal), lParen, rParen);
+      var variable = Parser.between(Parser.andThen(Parser.keepRight(Parser.between(Parser.string("let"), manyWhitespace, manyWhitespace), Parser.between(identifier, manyWhitespace, manyWhitespace)), literal), lParen, rParen);
+      var keyword = Parser.between(Parser.string("fun"), manyWhitespace, manyWhitespace);
+      var name = Parser.between(identifier, manyWhitespace, manyWhitespace);
+      var arg = Parser.between(identifier, manyWhitespace, manyWhitespace);
+      var args = Parser.between(Parser.between(Parser.many(arg), lBracket, rBracket), manyWhitespace, manyWhitespace);
+      var fn = Parser.between(Parser.andThen(Parser.andThen(Parser.keepRight(keyword, name), args), literal), lParen, rParen);
+      var module_ = Parser.between(Parser.andThen(Parser.keepRight(Parser.between(Parser.string("module"), manyWhitespace, manyWhitespace), Parser.between(identifier, manyWhitespace, manyWhitespace)), Parser.between(Parser.many(def), lBrace, rBrace)), lParen, rParen);
+      var moduleDef = Parser.map(module_, (function (param) {
+              var match = Belt_List.partition(param[1], (function (x) {
+                      if (x.TAG === /* DExport */3) {
+                        return true;
+                      } else {
+                        return false;
+                      }
+                    }));
+              var $$exports = Belt_List.keepMap(match[0], (function (x) {
+                      if (x.TAG === /* DExport */3) {
+                        return [
+                                x._0,
+                                x._1
+                              ];
+                      }
+                      
+                    }));
+              return /* Module */{
+                      _0: param[0],
+                      _1: match[1],
+                      _2: $$exports
+                    };
+            }));
+      return Parser.between(Parser.choice([
+                      Parser.map(variable, (function (param) {
+                              return {
+                                      TAG: /* DVariable */0,
+                                      _0: param[0],
+                                      _1: param[1]
+                                    };
+                            })),
+                      Parser.map(fn, (function (param) {
+                              var match = param[0];
+                              return {
+                                      TAG: /* DFunction */1,
+                                      _0: match[0],
+                                      _1: match[1],
+                                      _2: param[1]
+                                    };
+                            })),
+                      Parser.map(moduleDef, (function (m) {
+                              return {
+                                      TAG: /* DModule */2,
+                                      _0: m
+                                    };
+                            })),
+                      Parser.map(export_, (function (param) {
+                              return {
+                                      TAG: /* DExport */3,
+                                      _0: param[0],
+                                      _1: param[1]
+                                    };
+                            }))
+                    ]), manyWhitespace, manyWhitespace);
+    });
+
 function literalToString(literal) {
   var indent = function (param) {
     return "\n\t".concat(param);
@@ -304,24 +369,7 @@ function blockToString(block) {
   }
 }
 
-var identifier$1 = Parser.map(Parser.many(Parser.choice([
-              uppercase,
-              lowercase
-            ])), charListToString);
-
-Parser.$$char(/* 'a' */97);
-
-Parser.map(Parser.keepLeft(Parser.keepLeft(Parser.keepRight(Parser.keepRight(Parser.keepRight(Parser.keepRight(Parser.$$char(/* '(' */40), manyWhitespace), Parser.string("module")), manyWhitespace), identifier$1), manyWhitespace), Parser.$$char(/* ')' */41)), (function (xs) {
-        return /* Module */{
-                _0: "",
-                _1: /* [] */0,
-                _2: undefined
-              };
-      }));
-
 var P;
-
-var parser;
 
 exports.P = P;
 exports.charListToString = charListToString;
@@ -346,8 +394,8 @@ exports.stringLiteral = stringLiteral;
 exports.numberLiteral = numberLiteral;
 exports.identifier = identifier;
 exports.literal = literal;
+exports.definition = definition;
 exports.literalToString = literalToString;
 exports.functionToString = functionToString;
 exports.blockToString = blockToString;
-exports.parser = parser;
 /* whitespace Not a pure module */
