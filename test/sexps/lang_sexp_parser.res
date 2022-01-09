@@ -298,3 +298,27 @@ and blockToString = block => {
   | BLiteral(literal) => `BLiteral(${literal->literalToString})`
   }
 }
+
+let parser = {
+  P.string("module")
+  ->betweenManyWhitespace
+  ->P.keepRight(identifier->betweenManyWhitespace)
+  ->P.andThen(P.many(definition)->betweenBraces)
+  ->betweenParens
+  ->P.map(((name, defs)) => {
+    let (exports, defs) = defs->Belt.List.partition(x => {
+      switch x {
+      | DExport(_) => true
+      | _ => false
+      }
+    })
+    let exports = exports->Belt.List.keepMap(x => {
+      switch x {
+      | DExport(name, literal) => Some(name, literal)
+      | _ => None
+      }
+    })
+
+    Module(name, defs, exports)
+  })
+}

@@ -369,6 +369,30 @@ function blockToString(block) {
   }
 }
 
+var parser = Parser.map(Parser.between(Parser.andThen(Parser.keepRight(Parser.between(Parser.string("module"), manyWhitespace, manyWhitespace), Parser.between(identifier, manyWhitespace, manyWhitespace)), Parser.between(Parser.many(definition), lBrace, rBrace)), lParen, rParen), (function (param) {
+        var match = Belt_List.partition(param[1], (function (x) {
+                if (x.TAG === /* DExport */3) {
+                  return true;
+                } else {
+                  return false;
+                }
+              }));
+        var $$exports = Belt_List.keepMap(match[0], (function (x) {
+                if (x.TAG === /* DExport */3) {
+                  return [
+                          x._0,
+                          x._1
+                        ];
+                }
+                
+              }));
+        return /* Module */{
+                _0: param[0],
+                _1: match[1],
+                _2: $$exports
+              };
+      }));
+
 var P;
 
 exports.P = P;
@@ -398,4 +422,5 @@ exports.definition = definition;
 exports.literalToString = literalToString;
 exports.functionToString = functionToString;
 exports.blockToString = blockToString;
+exports.parser = parser;
 /* whitespace Not a pure module */
