@@ -47,6 +47,66 @@ var successes = [
     }
   ],
   [
+    "Variable assignment with special chars 1",
+    "(let _hello 12)",
+    {
+      TAG: /* DVariable */0,
+      _0: "_hello",
+      _1: {
+        TAG: /* LNumber */1,
+        _0: "12"
+      }
+    }
+  ],
+  [
+    "Variable assignment with special chars 2",
+    "(let hello-world 12)",
+    {
+      TAG: /* DVariable */0,
+      _0: "hello-world",
+      _1: {
+        TAG: /* LNumber */1,
+        _0: "12"
+      }
+    }
+  ],
+  [
+    "Variable assignment with special chars 3",
+    "(let hello---world 12)",
+    {
+      TAG: /* DVariable */0,
+      _0: "hello---world",
+      _1: {
+        TAG: /* LNumber */1,
+        _0: "12"
+      }
+    }
+  ],
+  [
+    "Variable assignment with special chars 4",
+    "(let my_thinGY 12)",
+    {
+      TAG: /* DVariable */0,
+      _0: "my_thinGY",
+      _1: {
+        TAG: /* LNumber */1,
+        _0: "12"
+      }
+    }
+  ],
+  [
+    "Variable assignment with special chars 5",
+    "(let hello-world- 12)",
+    {
+      TAG: /* DVariable */0,
+      _0: "hello-world-",
+      _1: {
+        TAG: /* LNumber */1,
+        _0: "12"
+      }
+    }
+  ],
+  [
     "Function definition",
     "(fun hello [a b] 12)",
     {

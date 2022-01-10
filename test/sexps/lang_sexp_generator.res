@@ -8,23 +8,18 @@ let rec listLast = l => {
 
 type t = Lang_sexp_parser.t
 
+let stringifyIdentifier = Js.String.replaceByRe(%re(`/-/g`), "__HYPHEN__")
+let tab = x => Js.String2.repeat("", x * 2)
+
+let joinWith = Belt.Array.joinWith
+
 let rec stringifyDef = (def: Lang_sexp_parser.definition, indent) => {
-  let ws = Js.String.repeat(indent, "\t")
-  let newline = "\n" ++ ws ++ ""
+  let newline = "\n"
 
   switch def {
-  | DVariable(identifier, literal) => `var ${identifier} = ${stringifyLiteral(literal, indent)}`
-  | DFunction(identifier, args, literal) => {
-      let args = args->Belt.List.toArray->Belt.Array.joinWith(",", x => x)
-
-      `function ${identifier}(${args}) {` ++
-      newline ++
-      Js.String.repeat(indent + 1, "\t") ++
-      `return ` ++
-      stringifyLiteral(literal, indent + 1) ++
-      `;` ++
-      newline ++ `}`
-    }
+  | DVariable(identifier, literal) =>
+    `var ${identifier->stringifyIdentifier} = ${stringifyLiteral(literal, indent + 1)}`
+  | DFunction(identifier, args, literal) => stringifyFunction(identifier, args, literal, indent + 1)
   | DModule(Module(name, definitions, exports)) => {
       let defs =
         definitions
@@ -43,7 +38,6 @@ let rec stringifyDef = (def: Lang_sexp_parser.definition, indent) => {
       newline ++
       `return {` ++
       newline ++
-      ws ++
       exports ++
       newline ++
       newline ++
@@ -54,8 +48,7 @@ let rec stringifyDef = (def: Lang_sexp_parser.definition, indent) => {
   }
 }
 and stringifyLiteral = (literal: Lang_sexp_parser.literal, indent) => {
-  let ws = Js.String.repeat(indent, "\t")
-  let newline = "\n" ++ ws
+  let newline = "\n"
 
   switch literal {
   | LIdentifier(identifier) => identifier
@@ -73,22 +66,86 @@ and stringifyLiteral = (literal: Lang_sexp_parser.literal, indent) => {
 
       `[${body}]`
     }
-  | LRecord(pairs) => {
-      let x = 1
-
-      ws ++ `{` ++ newline ++ `}`
-    }
+  | LRecord(pairs) =>
+    [
+      `{`,
+      pairs
+      ->Belt.List.toArray
+      ->joinWith(",\n", ((name, l)) => `"${name}": ${stringifyLiteral(l, indent + 1)}`),
+      `}`,
+    ]->Js.Array2.joinWith("\n")
   | LLambda(params, literal) => {
-      ()
-      `function() {
-      return
-    }`
+      let params = params->Belt.List.toArray->Js.Array2.joinWith(", ")
+
+      `function(${params}) {` ++
+      newline ++
+      tab(indent) ++
+      `return ` ++
+      stringifyLiteral(literal, indent) ++
+      newline ++ `}`
     }
-  | LExecution(function, args) => {
-      ()
-      ``
+  | LExecution(function, args) =>
+    switch function {
+    | FNamed(identifier) =>
+      stringifyIdentifier(identifier) ++
+      "(" ++
+      args->Belt.List.toArray->Belt.Array.joinWith(", ", stringifyLiteral(_, indent)) ++ ")"
+    | FAnon(params, literal) => {
+        let body = stringifyFunction("", params, literal, indent + 1)
+
+        `(${body})();`
+      }
     }
-  | LBlock(bodies, return) => ""
+  | LBlock(bodies, return) => {
+      let bodies =
+        bodies
+        ->Belt.List.toArray
+        ->Belt.Array.map(x => {
+          switch x {
+          | BVariable(identifier, literal) =>
+            `var ${identifier} = ${stringifyLiteral(literal, indent + 1)};`
+          | BFunction(identifier, args, literal) =>
+            `(${stringifyFunction(identifier, args, literal, indent + 1)})();`
+          | BLiteral(literal) => stringifyLiteral(literal, indent + 1)
+          }
+        })
+        ->Belt.Array.joinWith("\n", x => x)
+      let return =
+        return
+        ->Belt.Option.map(x => `return ${stringifyLiteral(x, indent + 1)}`)
+        ->Belt.Option.getWithDefault("")
+
+      `(function() {${bodies} ${return}; })()`
+    }
+  }
+}
+and stringifyFunction = (identifier, args, literal, indent: int) => {
+  let ws = tab(indent)
+  let newline = "\n" ++ ws ++ ""
+  let args = args->Belt.List.toArray->Belt.Array.joinWith(",", x => x)
+
+  `function ${stringifyIdentifier(identifier)}(${args}) {` ++
+  newline ++
+  tab(indent + 1) ++
+  `return ` ++
+  stringifyLiteral(literal, indent + 1) ++
+  `;` ++
+  newline ++ `}`
+}
+and stringifyBlock = (block: Lang_sexp_parser.block, indent) => {
+  switch block {
+  | BVariable(identifier, literal) =>
+    `var ${identifier} = ${stringifyLiteral(literal, indent + 1)};`
+  | BFunction(identifier, args, literal) =>
+    `(${stringifyFunction(identifier, args, literal, indent + 1)})();`
+  | BLiteral(literal) => stringifyLiteral(literal, indent + 1)
+  }
+}
+and setBlockName = (name, block: Lang_sexp_parser.block) => {
+  switch block {
+  | BVariable(identifier, literal) => Lang_sexp_parser.BVariable(name ++ identifier, literal)
+  | BFunction(identifier, args, literal) => BFunction(name ++ identifier, args, literal)
+  | BLiteral(literal) => BLiteral(literal)
   }
 }
 
@@ -106,12 +163,12 @@ let generate = (t: t) => {
         exports
         ->Belt.List.toArray
         ->Belt.Array.joinWith(",\n", ((name, literal)) =>
-          `\t${name}: ${stringifyLiteral(literal, 0)}`
+          tab(1) ++ `${name}: ${stringifyLiteral(literal, 0)}`
         )
 
       `module.exports = {\n` ++ exports ++ `\n}`
     }
 
-    file ++ "\n\n" ++ exports
+    (name, file ++ "\n\n" ++ exports)
   }
 }

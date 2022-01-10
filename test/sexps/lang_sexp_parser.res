@@ -52,6 +52,9 @@ let betweenParens = P.between(_, lParen, rParen)
 let betweenBraces = P.between(_, lBrace, rBrace)
 let betweenDoubleQuote = P.between(_, doubleQuote, doubleQuote)
 
+let hyphen = P.char('-')
+let underbar = P.char('_')
+
 let digit = P.satisfy(c => c >= '0' && '9' >= c)
 let uppercase = P.satisfy(c => c >= 'a' && 'z' >= c)
 let lowercase = P.satisfy(c => c >= 'A' && 'Z' >= c)
@@ -73,6 +76,15 @@ let numberLiteral = {
 }
 
 let identifier = {
+  let withoutLeadingHyphen =
+    P.atLeastOne(P.choice([uppercase, lowercase, underbar]))
+    ->P.andThen(P.many(P.choice([uppercase, lowercase, digit, hyphen, underbar])))
+    ->P.map(((a, b)) => Belt.List.concat(a, b))
+
+  withoutLeadingHyphen->P.map(charListToString)
+}
+
+let moduleIdentifier = {
   P.atLeastOne(P.choice([uppercase, lowercase]))->P.map(charListToString)
 }
 
@@ -302,7 +314,7 @@ and blockToString = block => {
 let parser = {
   P.string("module")
   ->betweenManyWhitespace
-  ->P.keepRight(identifier->betweenManyWhitespace)
+  ->P.keepRight(moduleIdentifier->betweenManyWhitespace)
   ->P.andThen(P.many(definition)->betweenBraces)
   ->betweenParens
   ->P.map(((name, defs)) => {

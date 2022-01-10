@@ -11,6 +11,36 @@ let successes = [
     DVariable("hello", LLambda(list{"a", "b"}, LNumber("12"))),
   ),
   (
+    "Variable assignment with special chars 1",
+    //
+    `(let _hello 12)`,
+    DVariable("_hello", LNumber("12")),
+  ),
+  (
+    "Variable assignment with special chars 2",
+    //
+    `(let hello-world 12)`,
+    DVariable("hello-world", LNumber("12")),
+  ),
+  (
+    "Variable assignment with special chars 3",
+    //
+    `(let hello---world 12)`,
+    DVariable("hello---world", LNumber("12")),
+  ),
+  (
+    "Variable assignment with special chars 4",
+    //
+    `(let my_thinGY 12)`,
+    DVariable("my_thinGY", LNumber("12")),
+  ),
+  (
+    "Variable assignment with special chars 5",
+    //
+    `(let hello-world- 12)`,
+    DVariable("hello-world-", LNumber("12")),
+  ),
+  (
     "Function definition",
     `(fun hello [a b] 12)`,
     DFunction("hello", list{"a", "b"}, LNumber("12")),

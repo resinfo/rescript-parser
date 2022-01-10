@@ -55,6 +55,10 @@ function betweenDoubleQuote(__x) {
   return Parser.between(__x, doubleQuote, doubleQuote);
 }
 
+var hyphen = Parser.$$char(/* '-' */45);
+
+var underbar = Parser.$$char(/* '_' */95);
+
 var digit = Parser.satisfy(function (c) {
       if (c >= /* '0' */48) {
         return /* '9' */57 >= c;
@@ -87,7 +91,23 @@ var stringLiteral = Parser.map(Parser.between(Parser.many(Parser.choice([
 
 var numberLiteral = Parser.map(Parser.atLeastOne(digit), charListToString);
 
-var identifier = Parser.map(Parser.atLeastOne(Parser.choice([
+var withoutLeadingHyphen = Parser.map(Parser.andThen(Parser.atLeastOne(Parser.choice([
+                  uppercase,
+                  lowercase,
+                  underbar
+                ])), Parser.many(Parser.choice([
+                  uppercase,
+                  lowercase,
+                  digit,
+                  hyphen,
+                  underbar
+                ]))), (function (param) {
+        return Belt_List.concat(param[0], param[1]);
+      }));
+
+var identifier = Parser.map(withoutLeadingHyphen, charListToString);
+
+var moduleIdentifier = Parser.map(Parser.atLeastOne(Parser.choice([
               uppercase,
               lowercase
             ])), charListToString);
@@ -369,7 +389,7 @@ function blockToString(block) {
   }
 }
 
-var parser = Parser.map(Parser.between(Parser.andThen(Parser.keepRight(Parser.between(Parser.string("module"), manyWhitespace, manyWhitespace), Parser.between(identifier, manyWhitespace, manyWhitespace)), Parser.between(Parser.many(definition), lBrace, rBrace)), lParen, rParen), (function (param) {
+var parser = Parser.map(Parser.between(Parser.andThen(Parser.keepRight(Parser.between(Parser.string("module"), manyWhitespace, manyWhitespace), Parser.between(moduleIdentifier, manyWhitespace, manyWhitespace)), Parser.between(Parser.many(definition), lBrace, rBrace)), lParen, rParen), (function (param) {
         var match = Belt_List.partition(param[1], (function (x) {
                 if (x.TAG === /* DExport */3) {
                   return true;
@@ -411,12 +431,15 @@ exports.betweenBrackets = betweenBrackets;
 exports.betweenParens = betweenParens;
 exports.betweenBraces = betweenBraces;
 exports.betweenDoubleQuote = betweenDoubleQuote;
+exports.hyphen = hyphen;
+exports.underbar = underbar;
 exports.digit = digit;
 exports.uppercase = uppercase;
 exports.lowercase = lowercase;
 exports.stringLiteral = stringLiteral;
 exports.numberLiteral = numberLiteral;
 exports.identifier = identifier;
+exports.moduleIdentifier = moduleIdentifier;
 exports.literal = literal;
 exports.definition = definition;
 exports.literalToString = literalToString;
