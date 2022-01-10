@@ -28,9 +28,9 @@ type exportName = string
 type rec definition =
   | DVariable(identifier, literal)
   | DFunction(identifier, list<functionArg>, literal)
-  | DModule(module_)
+  | DModule(t)
   | DExport(exportName, literal)
-and module_ = Module(moduleName, list<definition>, list<(exportName, literal)>)
+and t = Module(moduleName, list<definition>, list<(exportName, literal)>)
 
 let charListToString = ls =>
   ls->Belt.List.map(Char.escaped)->Belt.List.reduce("", Js.String2.concat)
