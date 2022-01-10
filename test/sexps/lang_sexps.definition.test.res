@@ -4,7 +4,11 @@ open Ava
 
 let run = P.run(Sexp.definition)
 let successes = [
-  ("Variable assignment literal", `(let hello "world")`, Sexp.DVariable("hello", LString("world"))),
+  (
+    "Variable assignment literal",
+    `(let hello "world")`,
+    Sexp.Ast.DVariable("hello", LString("world")),
+  ),
   (
     "Variable assignment lambda",
     `(let hello (lam [a b] 12))`,

@@ -57,15 +57,6 @@ function stringifyDef(def, indent) {
   }
 }
 
-function stringifyFunction(identifier, args, literal, indent) {
-  var ws = tab(indent);
-  var newline = "\n" + ws + "";
-  var args$1 = Belt_Array.joinWith(Belt_List.toArray(args), ",", (function (x) {
-          return x;
-        }));
-  return "function " + stringifyIdentifier(identifier) + "(" + args$1 + ") {" + newline + tab(indent + 1 | 0) + "return " + stringifyLiteral(literal, indent + 1 | 0) + ";" + newline + "}";
-}
-
 function stringifyLiteral(literal, indent) {
   var newline = "\n";
   if (typeof literal === "number") {
@@ -128,6 +119,15 @@ function stringifyLiteral(literal, indent) {
         return "(function() {" + bodies + " " + $$return + "; })()";
     
   }
+}
+
+function stringifyFunction(identifier, args, literal, indent) {
+  var ws = tab(indent);
+  var newline = "\n" + ws + "";
+  var args$1 = Belt_Array.joinWith(Belt_List.toArray(args), ",", (function (x) {
+          return x;
+        }));
+  return "function " + stringifyIdentifier(identifier) + "(" + args$1 + ") {" + newline + tab(indent + 1 | 0) + "return " + stringifyLiteral(literal, indent + 1 | 0) + ";" + newline + "}";
 }
 
 function stringifyBlock(block, indent) {

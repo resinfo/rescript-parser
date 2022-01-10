@@ -6,6 +6,7 @@ var Parser = require("../../src/parser.cjs");
 var Caml_obj = require("rescript/lib/js/caml_obj.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Lang_sexp_parser = require("./lang_sexp_parser.cjs");
+var Lang_sexp_parser__ast = require("./lang_sexp_parser__ast.cjs");
 
 function run(param) {
   return Parser.run(Lang_sexp_parser.literal, param);
@@ -33,6 +34,22 @@ var successes = [
     /* LFalse */1
   ],
   [
+    "simple string",
+    "\"hello, world!\"",
+    {
+      TAG: /* LString */2,
+      _0: "hello, world!"
+    }
+  ],
+  [
+    "simple string w/ escaped characters",
+    "\"hello, \\\"world!\"",
+    {
+      TAG: /* LString */2,
+      _0: "hello, \"world!"
+    }
+  ],
+  [
     "simple number",
     "10",
     {
@@ -50,18 +67,18 @@ var successes = [
   ],
   [
     "simple++ number",
-    "0019652200",
+    "19652200",
     {
       TAG: /* LNumber */1,
-      _0: "0019652200"
+      _0: "19652200"
     }
   ],
   [
     "simple++ number w/ whitespace",
-    "    0019652200 ",
+    "    19652200 ",
     {
       TAG: /* LNumber */1,
-      _0: "0019652200"
+      _0: "19652200"
     }
   ],
   [
@@ -946,7 +963,7 @@ Belt_Array.forEach(successes, (function (param) {
                       if (rest === "" && Caml_obj.caml_equal(output, expected)) {
                         return Ava.pass(t, "", undefined);
                       }
-                      return Ava.fail(t, "Shouldn't succeed with " + Lang_sexp_parser.literalToString(output) + " and \"" + rest + "\" remaining", undefined);
+                      return Ava.fail(t, "Shouldn't succeed with " + Lang_sexp_parser__ast.literalToString(output) + " and \"" + rest + "\" remaining", undefined);
                     }));
       }));
 

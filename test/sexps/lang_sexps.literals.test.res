@@ -5,14 +5,16 @@ open Ava
 let run = P.run(Sexp.literal)
 let successes = [
   //
-  ("true", "true", Sexp.LTrue),
+  ("true", "true", Sexp.Ast.LTrue),
   ("true w/ whitespace", "    true  ", LTrue),
   ("false", "false", LFalse),
   ("false w/ whitespace", "    false  ", LFalse),
+  ("simple string", `"hello, world!"`, LString("hello, world!")),
+  ("simple string w/ escaped characters", `"hello, \\\"world!"`, LString("hello, \"world!")),
   ("simple number", "10", LNumber("10")),
   ("simple number w/ whitespace", "    10 ", LNumber("10")),
-  ("simple++ number", "0019652200", LNumber("0019652200")),
-  ("simple++ number w/ whitespace", "    0019652200 ", LNumber("0019652200")),
+  ("simple++ number", "19652200", LNumber("19652200")),
+  ("simple++ number w/ whitespace", "    19652200 ", LNumber("19652200")),
   ("simple identifier", "hello", LIdentifier("hello")),
   (
     "simple identifier w/ whitespace",
@@ -359,7 +361,7 @@ successes->Belt.Array.forEach(((name, input, expected)) => {
     | Ok(output, "") if output == expected => t->pass(~message=``, ())
     | Ok(_ast, rest) =>
       t->fail(
-        ~message=`Shouldn't succeed with ${_ast->Sexp.literalToString} and "${rest}" remaining`,
+        ~message=`Shouldn't succeed with ${_ast->Sexp.Ast.literalToString} and "${rest}" remaining`,
         (),
       )
     | Error(err) => t->fail(~message=`Shouldn't fail with "${err}"`, ())

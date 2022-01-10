@@ -6,14 +6,14 @@ let rec listLast = l => {
   }
 }
 
-type t = Lang_sexp_parser.t
+type t = Lang_sexp_parser.Ast.t
 
 let stringifyIdentifier = Js.String.replaceByRe(%re(`/-/g`), "__HYPHEN__")
 let tab = x => Js.String2.repeat("", x * 2)
 
 let joinWith = Belt.Array.joinWith
 
-let rec stringifyDef = (def: Lang_sexp_parser.definition, indent) => {
+let rec stringifyDef = (def: Lang_sexp_parser.Ast.definition, indent) => {
   let newline = "\n"
 
   switch def {
@@ -47,7 +47,7 @@ let rec stringifyDef = (def: Lang_sexp_parser.definition, indent) => {
   | DExport(_exportName, _literal) => ""
   }
 }
-and stringifyLiteral = (literal: Lang_sexp_parser.literal, indent) => {
+and stringifyLiteral = (literal: Lang_sexp_parser.Ast.literal, indent) => {
   let newline = "\n"
 
   switch literal {
@@ -132,7 +132,7 @@ and stringifyFunction = (identifier, args, literal, indent: int) => {
   `;` ++
   newline ++ `}`
 }
-and stringifyBlock = (block: Lang_sexp_parser.block, indent) => {
+and stringifyBlock = (block: Lang_sexp_parser.Ast.block, indent) => {
   switch block {
   | BVariable(identifier, literal) =>
     `var ${identifier} = ${stringifyLiteral(literal, indent + 1)};`
@@ -141,9 +141,9 @@ and stringifyBlock = (block: Lang_sexp_parser.block, indent) => {
   | BLiteral(literal) => stringifyLiteral(literal, indent + 1)
   }
 }
-and setBlockName = (name, block: Lang_sexp_parser.block) => {
+and setBlockName = (name, block: Lang_sexp_parser.Ast.block) => {
   switch block {
-  | BVariable(identifier, literal) => Lang_sexp_parser.BVariable(name ++ identifier, literal)
+  | BVariable(identifier, literal) => Lang_sexp_parser.Ast.BVariable(name ++ identifier, literal)
   | BFunction(identifier, args, literal) => BFunction(name ++ identifier, args, literal)
   | BLiteral(literal) => BLiteral(literal)
   }

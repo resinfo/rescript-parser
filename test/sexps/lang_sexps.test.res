@@ -11,10 +11,10 @@ test("[Sexp lang] Module", t => {
 
   switch run(input) {
   | Ok(
-      Sexp.Module(
+      Sexp.Ast.Module(
         "file",
-        list{Sexp.DVariable("hello", Sexp.LString("world"))},
-        list{("hello", Sexp.LIdentifier("hello"))},
+        list{Sexp.Ast.DVariable("hello", Sexp.Ast.LString("world"))},
+        list{("hello", Sexp.Ast.LIdentifier("hello"))},
       ),
       "",
     ) =>
