@@ -2,7 +2,6 @@
 'use strict';
 
 var Parser = require("../../src/parser.cjs");
-var Belt_List = require("rescript/lib/js/belt_List.js");
 var Json_helpers = require("./json_helpers.cjs");
 
 function toString(t) {
@@ -83,17 +82,24 @@ function object(xs) {
 }
 
 var json = Parser.makeRecursive(function (p) {
-      var empty = Parser.map(Parser.between(Json_helpers.manyWhitespace, Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93)), (function (param) {
+      var comma = Parser.$$char(/* ',' */44);
+      var betweenBraces = function (__x) {
+        return Parser.between(__x, Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93));
+      };
+      var empty = Parser.map(betweenBraces(Json_helpers.manyWhitespace), (function (param) {
               return /* [] */0;
             }));
-      var nonEmpty = Parser.map(Parser.between(Parser.separatedBy1(Parser.many(p), Parser.between(Parser.$$char(/* ',' */44), Json_helpers.manyWhitespace, Json_helpers.manyWhitespace)), Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93)), Belt_List.flatten);
+      var nonEmpty = betweenBraces(Parser.separatedBy1(p, comma));
       var arrayElements = Parser.choice([
             empty,
             nonEmpty
           ]);
+      var betweenCurlyBraces = function (__x) {
+        return Parser.between(__x, Parser.$$char(/* '{' */123), Parser.$$char(/* '}' */125));
+      };
       var keyValuePair = Parser.andThen(Parser.keepLeft(Parser.between(Json_helpers.string, Json_helpers.manyWhitespace, Json_helpers.manyWhitespace), Parser.$$char(/* ':' */58)), p);
-      var nonEmpty$1 = Parser.between(Parser.map(Parser.separatedBy1(Parser.many(keyValuePair), Parser.$$char(/* ',' */44)), Belt_List.flatten), Parser.$$char(/* '{' */123), Parser.$$char(/* '}' */125));
-      var empty$1 = Parser.map(Parser.between(Json_helpers.manyWhitespace, Parser.$$char(/* '{' */123), Parser.$$char(/* '}' */125)), (function (param) {
+      var nonEmpty$1 = betweenCurlyBraces(Parser.separatedBy1(keyValuePair, comma));
+      var empty$1 = Parser.map(betweenCurlyBraces(Json_helpers.manyWhitespace), (function (param) {
               return /* [] */0;
             }));
       var objectPairs = Parser.choice([
@@ -101,13 +107,13 @@ var json = Parser.makeRecursive(function (p) {
             nonEmpty$1
           ]);
       return Parser.between(Parser.choice([
+                      Parser.map(Parser.string("null"), $$null),
+                      Parser.map(Parser.string("true"), true_),
+                      Parser.map(Parser.string("false"), false_),
                       Parser.map(objectPairs, object),
                       Parser.map(arrayElements, array),
                       Parser.map(Json_helpers.number, number),
-                      Parser.map(Json_helpers.string, string),
-                      Parser.map(Parser.string("null"), $$null),
-                      Parser.map(Parser.string("true"), true_),
-                      Parser.map(Parser.string("false"), false_)
+                      Parser.map(Json_helpers.string, string)
                     ]), Json_helpers.manyWhitespace, Json_helpers.manyWhitespace);
     });
 

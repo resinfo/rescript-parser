@@ -151,20 +151,18 @@ let object = xs => Object(xs)
 
 let json = P.makeRecursive(p => {
   let {manyWhitespace} = module(Helpers)
+  let comma = P.char(',')
 
   let arrayElements = {
-    let empty = manyWhitespace->P.between(P.char('['), P.char(']'))->P.map(_ => list{})
-
-    let nonEmpty =
-      P.many(p)
-      ->P.separatedBy1(P.char(',')->P.between(manyWhitespace, manyWhitespace))
-      ->P.between(P.char('['), P.char(']'))
-      ->P.map(Belt.List.flatten(_))
+    let betweenBraces = P.between(_, P.char('['), P.char(']'))
+    let empty = manyWhitespace->betweenBraces->P.map(_ => list{})
+    let nonEmpty = p->P.separatedBy1(comma)->betweenBraces
 
     P.choice([empty, nonEmpty])
   }
 
   let objectPairs = {
+    let betweenCurlyBraces = P.between(_, P.char('{'), P.char('}'))
     let nonEmpty = {
       let keyValuePair =
         Helpers.string
@@ -172,26 +170,23 @@ let json = P.makeRecursive(p => {
         ->P.keepLeft(P.char(':'))
         ->P.andThen(p)
 
-      P.many(keyValuePair)
-      ->P.separatedBy1(P.char(','))
-      ->P.map(Belt.List.flatten(_))
-      ->P.between(P.char('{'), P.char('}'))
+      keyValuePair->P.separatedBy1(comma)->betweenCurlyBraces
     }
 
     let empty = {
-      manyWhitespace->P.between(P.char('{'), P.char('}'))->P.map(_ => list{})
+      manyWhitespace->betweenCurlyBraces->P.map(_ => list{})
     }
 
     P.choice([empty, nonEmpty])
   }
 
   P.choice([
+    P.string("null")->P.map(null),
+    P.string("true")->P.map(true_),
+    P.string("false")->P.map(false_),
     objectPairs->P.map(object),
     arrayElements->P.map(array),
     Helpers.number->P.map(number),
     Helpers.string->P.map(string),
-    P.string("null")->P.map(null),
-    P.string("true")->P.map(true_),
-    P.string("false")->P.map(false_),
   ])->P.between(manyWhitespace, manyWhitespace)
 })

@@ -41,6 +41,29 @@ test("Separated by simple", t => {
   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
   | Error(_) => t->fail()
   }
+
+  let manyWhitespace = P.many(P.char(' '))
+  let commaWithWhitespace = P.char(',')->P.between(manyWhitespace, manyWhitespace)
+  let parser = P.char('a')->P.separatedBy1(commaWithWhitespace)
+
+  let run = P.run(parser)
+
+  switch run("a, a,a,   a    ,a") {
+  | Ok(list{'a', 'a', 'a', 'a', 'a'}, "") => t->pass()
+  | Ok(_, rest) => t->fail(~message=`Shouldn't succeed with "${rest}" remaining`, ())
+  | Error(err) => t->fail(~message=`Shouldn't fail with "${err}"`, ())
+  }
+
+  switch run("a") {
+  | Ok(list{'a'}, "") => t->pass()
+  | Ok(_, rest) => t->fail(~message=`Shouldn't succeed with "${rest}" remaining`, ())
+  | Error(err) => t->fail(~message=`Shouldn't fail with "${err}"`, ())
+  }
+
+  switch run("") {
+  | Ok(_, rest) => t->fail(~message=`Shouldn't succeed with "${rest}" remaining`, ())
+  | Error(err) => t->pass(~message=`Shouldn't fail with "${err}"`, ())
+  }
 })
 
 test("Separated by many simple", t => {

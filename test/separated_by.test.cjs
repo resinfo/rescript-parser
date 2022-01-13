@@ -75,14 +75,84 @@ Ava.test("Separated by simple", (function (t) {
           Ava.fail(t, undefined, undefined);
         }
         var match$8 = Parser.run(parser, "a,b,c");
-        if (match$8.TAG !== /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
+        if (match$8.TAG === /* Ok */0) {
+          var match$9 = match$8._0;
+          var exit$4 = 0;
+          if (match$9[0] === "a" && match$9[1] === ",b,c") {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            exit$4 = 1;
+          }
+          if (exit$4 === 1) {
+            Ava.fail(t, "Should not pass with \"" + match$9[1] + "\" remaining", undefined);
+          }
+          
+        } else {
+          Ava.fail(t, undefined, undefined);
         }
-        var match$9 = match$8._0;
-        if (match$9[0] === "a" && match$9[1] === ",b,c") {
-          return Ava.pass(t, undefined, undefined);
+        var manyWhitespace = Parser.many(Parser.$$char(/* ' ' */32));
+        var commaWithWhitespace = Parser.between(Parser.$$char(/* ',' */44), manyWhitespace, manyWhitespace);
+        var parser$1 = Parser.separatedBy1(Parser.$$char(/* 'a' */97), commaWithWhitespace);
+        var err = Parser.run(parser$1, "a, a,a,   a    ,a");
+        if (err.TAG === /* Ok */0) {
+          var match$10 = err._0;
+          var match$11 = match$10[0];
+          var exit$5 = 0;
+          if (match$11 && match$11.hd === 97) {
+            var match$12 = match$11.tl;
+            if (match$12 && match$12.hd === 97) {
+              var match$13 = match$12.tl;
+              if (match$13 && match$13.hd === 97) {
+                var match$14 = match$13.tl;
+                if (match$14 && match$14.hd === 97) {
+                  var match$15 = match$14.tl;
+                  if (match$15 && !(match$15.hd !== 97 || match$15.tl || match$10[1] !== "")) {
+                    Ava.pass(t, undefined, undefined);
+                  } else {
+                    exit$5 = 1;
+                  }
+                } else {
+                  exit$5 = 1;
+                }
+              } else {
+                exit$5 = 1;
+              }
+            } else {
+              exit$5 = 1;
+            }
+          } else {
+            exit$5 = 1;
+          }
+          if (exit$5 === 1) {
+            Ava.fail(t, "Shouldn't succeed with \"" + match$10[1] + "\" remaining", undefined);
+          }
+          
+        } else {
+          Ava.fail(t, "Shouldn't fail with \"" + err._0 + "\"", undefined);
         }
-        return Ava.fail(t, "Should not pass with \"" + match$9[1] + "\" remaining", undefined);
+        var err$1 = Parser.run(parser$1, "a");
+        if (err$1.TAG === /* Ok */0) {
+          var match$16 = err$1._0;
+          var match$17 = match$16[0];
+          var exit$6 = 0;
+          if (match$17 && !(match$17.hd !== 97 || match$17.tl || match$16[1] !== "")) {
+            Ava.pass(t, undefined, undefined);
+          } else {
+            exit$6 = 1;
+          }
+          if (exit$6 === 1) {
+            Ava.fail(t, "Shouldn't succeed with \"" + match$16[1] + "\" remaining", undefined);
+          }
+          
+        } else {
+          Ava.fail(t, "Shouldn't fail with \"" + err$1._0 + "\"", undefined);
+        }
+        var err$2 = Parser.run(parser$1, "");
+        if (err$2.TAG === /* Ok */0) {
+          return Ava.fail(t, "Shouldn't succeed with \"" + err$2._0[1] + "\" remaining", undefined);
+        } else {
+          return Ava.pass(t, "Shouldn't fail with \"" + err$2._0 + "\"", undefined);
+        }
       }));
 
 Ava.test("Separated by many simple", (function (t) {
