@@ -62,10 +62,5 @@ let parser = P.makeRecursive(p => {
     ->P.map(xs => Exp(xs))
     ->P.between(P.char('('), P.char(')'))
 
-  P.choice([
-    //
-    quotedString,
-    int,
-    sexp,
-  ])->P.between(manyWhitespace, manyWhitespace)
+  P.choice([quotedString, int, sexp])->P.between(manyWhitespace, manyWhitespace)
 })

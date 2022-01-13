@@ -22,6 +22,25 @@ var whitespace = Parser.satisfy(function ($$char) {
 
 var manyWhitespace = Parser.many(whitespace);
 
+function toString(t) {
+  switch (t.TAG | 0) {
+    case /* Int */0 :
+        return "Int(" + t._0 + ")";
+    case /* String */1 :
+        return "String(\"" + t._0 + "\")";
+    case /* Exp */2 :
+        var loop = function (lst) {
+          if (lst) {
+            return toString(lst.hd) + ", " + loop(lst.tl);
+          } else {
+            return "";
+          }
+        };
+        return "Exp(" + loop(t._0) + ")";
+    
+  }
+}
+
 var doubleQuote = Parser.$$char(/* '"' */34);
 
 var anyChar = Parser.satisfy(function ($$char) {
@@ -78,6 +97,7 @@ exports.P = P;
 exports.charListToString = charListToString;
 exports.whitespace = whitespace;
 exports.manyWhitespace = manyWhitespace;
+exports.toString = toString;
 exports.quotedString = quotedString;
 exports.$$int = $$int;
 exports.parser = parser;

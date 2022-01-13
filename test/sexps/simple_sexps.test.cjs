@@ -69,7 +69,7 @@ Belt_Array.forEach(okStringTests, (function (param) {
                             break;
                         
                       }
-                      return Ava.fail(t, "Shouldn't succeed with \"\" and \"" + match[1] + "\" remaining", undefined);
+                      return Ava.fail(t, "Shouldn't succeed with \"" + Simple_sexp_parser.toString(output) + "\" and \"" + match[1] + "\" remaining", undefined);
                     }));
       }));
 
@@ -127,7 +127,7 @@ Belt_Array.forEach(okIntTests, (function (param) {
                             break;
                         
                       }
-                      return Ava.fail(t, "Shouldn't succeed with \"\" and \"" + match[1] + "\" remaining", undefined);
+                      return Ava.fail(t, "Shouldn't succeed with \"" + Simple_sexp_parser.toString(output) + "\" and \"" + match[1] + "\" remaining", undefined);
                     }));
       }));
 
@@ -366,10 +366,11 @@ Belt_Array.forEach(okExpTests, (function (param) {
                       }
                       var match = err._0;
                       var rest = match[1];
-                      if (rest === "" && Caml_obj.caml_equal(match[0], expected)) {
+                      var output = match[0];
+                      if (rest === "" && Caml_obj.caml_equal(output, expected)) {
                         return Ava.pass(t, undefined, undefined);
                       }
-                      return Ava.fail(t, "Shouldn't succeed with \"\" and \"" + rest + "\" remaining", undefined);
+                      return Ava.fail(t, "Shouldn't succeed with \"" + Simple_sexp_parser.toString(output) + "\" and \"" + rest + "\" remaining", undefined);
                     }));
       }));
 
