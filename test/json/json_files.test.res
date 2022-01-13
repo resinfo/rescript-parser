@@ -28,7 +28,7 @@ passes->forEach(((name, file)) => {
 })
 
 partials->forEach(((name, file)) => {
-  skip(`[JSON] File "${name}" partial success`, t => {
+  test(`[JSON] File "${name}" partial success`, t => {
     switch run(file) {
     | Ok(_, "") => t->fail(~message=`Shouldn't succeed`, ())
     | Ok(_, rest) => t->pass(~message=`Should partially succeed with "${rest}" remaining`, ())
