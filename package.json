@@ -21,7 +21,7 @@
   },
   "ava": {
     "files": [
-      "test/sexps/*.test.*js"
+      "test/**/*.test.*js"
     ]
   }
 }
