@@ -3,8 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/resinfo/rescript-parser.git",
+  "description": "@resinfo/parser is a parser combinator library for ReScript.",
   "author": "Oliver Fencott <oliverfencott@gmail.com>",
   "license": "MIT",
+  "files": [
+    "bsconfig.json",
+    "src/res_parser.res"
+  ],
+  "keywords": [
+    "rescript",
+    "parser"
+  ],
   "devDependencies": {
     "ava": "^3.15.0",
     "onchange": "^7.1.0",
