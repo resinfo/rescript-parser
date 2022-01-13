@@ -1,6 +1,5 @@
 open Ava
 
-module Helpers = Json_helpers
 module P = Parser
 
 test("Separated by simple", t => {

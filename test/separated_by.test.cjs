@@ -302,10 +302,7 @@ Ava.test("Separated by at least one", (function (t) {
         return Ava.fail(t, "Should not pass with \"" + match$9[1] + "\" remaining", undefined);
       }));
 
-var Helpers;
-
 var P;
 
-exports.Helpers = Helpers;
 exports.P = P;
 /*  Not a pure module */

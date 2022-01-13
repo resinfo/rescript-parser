@@ -1,7 +1,6 @@
 open Ava
 
 module P = Parser
-module Helpers = Json_helpers
 
 let run = P.run(Json.digit)
 

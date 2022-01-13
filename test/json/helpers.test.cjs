@@ -919,10 +919,7 @@ Ava.test("Unicode char fails", (function (t) {
 
 var P;
 
-var Helpers;
-
 exports.P = P;
-exports.Helpers = Helpers;
 exports.shouldNotPass = shouldNotPass;
 exports.shouldNotFail = shouldNotFail;
 exports.successes = successes;
