@@ -118,7 +118,6 @@ let separatedBy: separatedBy<'a, 'b> = (parser, separator) => {
   parser->separatedBy1(separator)->orElse(return(list{}))
 }
 
-// TODO: Use arrays instead of lists where possible
 let string = x => {
   x
   ->Js.String2.split("")
