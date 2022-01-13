@@ -37,7 +37,7 @@ let rec toString = t => {
 }
 
 module Option = Belt.Option
-module P = Parser
+module P = Res_parser
 
 @val
 external hexToInt: (string, @as(16) _) => int = "parseInt"

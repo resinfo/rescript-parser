@@ -1,4 +1,4 @@
-module P = Parser
+module P = Res_parser
 
 let charListToString = chars =>
   chars->Belt.List.map(Char.escaped)->Belt.List.reduce("", Js.String2.concat)

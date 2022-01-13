@@ -1,6 +1,6 @@
 open Ava
 
-module P = Parser
+module P = Res_parser
 
 let number = Json.number
 let run = P.run(Json.parse)

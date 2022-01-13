@@ -1,6 +1,6 @@
 open Ava
 
-module P = Parser
+module P = Res_parser
 
 // Define our AST
 type sign = Plus | Subtract | Multiply

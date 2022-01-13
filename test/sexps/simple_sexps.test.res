@@ -1,4 +1,4 @@
-module P = Parser
+module P = Res_parser
 open Ava
 
 module Simple = Simple_sexp_parser

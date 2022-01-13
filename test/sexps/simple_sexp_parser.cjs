@@ -2,8 +2,8 @@
 'use strict';
 
 var Char = require("rescript/lib/js/char.js");
-var Parser = require("../../src/parser.cjs");
 var Belt_List = require("rescript/lib/js/belt_List.js");
+var Res_parser = require("../../src/res_parser.cjs");
 var Belt_Option = require("rescript/lib/js/belt_Option.js");
 
 function charListToString(chars) {
@@ -12,7 +12,7 @@ function charListToString(chars) {
               }));
 }
 
-var whitespace = Parser.satisfy(function ($$char) {
+var whitespace = Res_parser.satisfy(function ($$char) {
       if ($$char > 13 || $$char < 9) {
         return $$char === 32;
       } else {
@@ -20,7 +20,7 @@ var whitespace = Parser.satisfy(function ($$char) {
       }
     });
 
-var manyWhitespace = Parser.many(whitespace);
+var manyWhitespace = Res_parser.many(whitespace);
 
 function toString(t) {
   switch (t.TAG | 0) {
@@ -41,20 +41,20 @@ function toString(t) {
   }
 }
 
-var doubleQuote = Parser.$$char(/* '"' */34);
+var doubleQuote = Res_parser.$$char(/* '"' */34);
 
-var anyChar = Parser.satisfy(function ($$char) {
+var anyChar = Res_parser.satisfy(function ($$char) {
       return $$char !== /* '"' */34;
     });
 
-var quotedString = Parser.map(Parser.map(Parser.between(Parser.many(anyChar), doubleQuote, doubleQuote), charListToString), (function (s) {
+var quotedString = Res_parser.map(Res_parser.map(Res_parser.between(Res_parser.many(anyChar), doubleQuote, doubleQuote), charListToString), (function (s) {
         return {
                 TAG: /* String */1,
                 _0: s
               };
       }));
 
-var digit = Parser.satisfy(function ($$char) {
+var digit = Res_parser.satisfy(function ($$char) {
       if ($$char >= /* '0' */48) {
         return /* '9' */57 >= $$char;
       } else {
@@ -62,11 +62,11 @@ var digit = Parser.satisfy(function ($$char) {
       }
     });
 
-var $$int = Parser.map(Parser.map(Parser.andThen(Parser.map(Parser.map(Parser.optional(Parser.$$char(/* '-' */45)), (function (__x) {
+var $$int = Res_parser.map(Res_parser.map(Res_parser.andThen(Res_parser.map(Res_parser.map(Res_parser.optional(Res_parser.$$char(/* '-' */45)), (function (__x) {
                         return Belt_Option.map(__x, Char.escaped);
                       })), (function (__x) {
                     return Belt_Option.getWithDefault(__x, "");
-                  })), Parser.map(Parser.atLeastOne(digit), charListToString)), (function (param) {
+                  })), Res_parser.map(Res_parser.atLeastOne(digit), charListToString)), (function (param) {
             return param[0] + param[1];
           })), (function (i) {
         return {
@@ -75,16 +75,16 @@ var $$int = Parser.map(Parser.map(Parser.andThen(Parser.map(Parser.map(Parser.op
               };
       }));
 
-var parser = Parser.makeRecursive(function (p) {
-      var sexp = Parser.between(Parser.map(Parser.orElse(Parser.atLeastOne(p), Parser.map(manyWhitespace, (function (param) {
+var parser = Res_parser.makeRecursive(function (p) {
+      var sexp = Res_parser.between(Res_parser.map(Res_parser.orElse(Res_parser.atLeastOne(p), Res_parser.map(manyWhitespace, (function (param) {
                           return /* [] */0;
                         }))), (function (xs) {
                   return {
                           TAG: /* Exp */2,
                           _0: xs
                         };
-                })), Parser.$$char(/* '(' */40), Parser.$$char(/* ')' */41));
-      return Parser.between(Parser.choice([
+                })), Res_parser.$$char(/* '(' */40), Res_parser.$$char(/* ')' */41));
+      return Res_parser.between(Res_parser.choice([
                       quotedString,
                       $$int,
                       sexp

@@ -3,14 +3,14 @@
 
 var Ava = require("rescript-ava/src/ava.cjs");
 var Json = require("./parser/json.cjs");
-var Parser = require("../../src/parser.cjs");
+var Res_parser = require("../../src/res_parser.cjs");
 
 function run(param) {
-  return Parser.run(Json.parse, param);
+  return Res_parser.run(Json.parse, param);
 }
 
 Ava.test("[JSON] Number succeeds", (function (t) {
-        var match = Parser.run(Json.parse, "1234");
+        var match = Res_parser.run(Json.parse, "1234");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
           var match$2 = match$1[0];
@@ -22,7 +22,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$3 = Parser.run(Json.parse, "-1234");
+        var match$3 = Res_parser.run(Json.parse, "-1234");
         if (match$3.TAG === /* Ok */0) {
           var match$4 = match$3._0;
           var match$5 = match$4[0];
@@ -34,7 +34,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$6 = Parser.run(Json.parse, "-0");
+        var match$6 = Res_parser.run(Json.parse, "-0");
         if (match$6.TAG === /* Ok */0) {
           var match$7 = match$6._0;
           var match$8 = match$7[0];
@@ -46,7 +46,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$9 = Parser.run(Json.parse, "0");
+        var match$9 = Res_parser.run(Json.parse, "0");
         if (match$9.TAG === /* Ok */0) {
           var match$10 = match$9._0;
           var match$11 = match$10[0];
@@ -58,7 +58,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$12 = Parser.run(Json.parse, "1234.1234");
+        var match$12 = Res_parser.run(Json.parse, "1234.1234");
         if (match$12.TAG === /* Ok */0) {
           var match$13 = match$12._0;
           var match$14 = match$13[0];
@@ -70,7 +70,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$15 = Parser.run(Json.parse, "1234.1e1");
+        var match$15 = Res_parser.run(Json.parse, "1234.1e1");
         if (match$15.TAG === /* Ok */0) {
           var match$16 = match$15._0;
           var match$17 = match$16[0];
@@ -82,7 +82,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$18 = Parser.run(Json.parse, "0.12E-6543");
+        var match$18 = Res_parser.run(Json.parse, "0.12E-6543");
         if (match$18.TAG !== /* Ok */0) {
           return Ava.fail(t, "Should not fail", undefined);
         }
@@ -96,7 +96,7 @@ Ava.test("[JSON] Number succeeds", (function (t) {
       }));
 
 Ava.test("[JSON] Number partially succeeds", (function (t) {
-        var match = Parser.run(Json.parse, "0.12E-6543hello");
+        var match = Res_parser.run(Json.parse, "0.12E-6543hello");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
           var match$2 = match$1[0];
@@ -108,7 +108,7 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$3 = Parser.run(Json.parse, "111hello");
+        var match$3 = Res_parser.run(Json.parse, "111hello");
         if (match$3.TAG === /* Ok */0) {
           var match$4 = match$3._0;
           var match$5 = match$4[0];
@@ -120,7 +120,7 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$6 = Parser.run(Json.parse, "-533.1hello");
+        var match$6 = Res_parser.run(Json.parse, "-533.1hello");
         if (match$6.TAG === /* Ok */0) {
           var match$7 = match$6._0;
           var match$8 = match$7[0];
@@ -132,7 +132,7 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$9 = Parser.run(Json.parse, "-1234.1..1hello");
+        var match$9 = Res_parser.run(Json.parse, "-1234.1..1hello");
         if (match$9.TAG !== /* Ok */0) {
           return Ava.fail(t, "Should not fail", undefined);
         }
@@ -146,19 +146,19 @@ Ava.test("[JSON] Number partially succeeds", (function (t) {
       }));
 
 Ava.test("[JSON] Number fails", (function (t) {
-        var match = Parser.run(Json.parse, "_-1");
+        var match = Res_parser.run(Json.parse, "_-1");
         if (match.TAG === /* Ok */0) {
           Ava.fail(t, "Should not succeed", undefined);
         } else {
           Ava.pass(t, undefined, undefined);
         }
-        var match$1 = Parser.run(Json.parse, "--0.12E-6543");
+        var match$1 = Res_parser.run(Json.parse, "--0.12E-6543");
         if (match$1.TAG === /* Ok */0) {
           Ava.fail(t, "Should not succeed", undefined);
         } else {
           Ava.pass(t, undefined, undefined);
         }
-        var match$2 = Parser.run(Json.parse, "a0.12");
+        var match$2 = Res_parser.run(Json.parse, "a0.12");
         if (match$2.TAG === /* Ok */0) {
           return Ava.fail(t, "Should not succeed", undefined);
         } else {

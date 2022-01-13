@@ -1,6 +1,6 @@
 # ReScript Parser
 
-`rescript-parser` is a parser combinator library for ReScript.
+`@resinfo/parser` is a parser combinator library for ReScript.
 
 ### Note:
 
@@ -19,7 +19,7 @@ npm install --save rescript-parser
 ## Usage
 
 ```rescript
-module P = Parser
+module P = Res_parser
 
 // Define our AST
 type sign = Plus | Subtract | Multiply

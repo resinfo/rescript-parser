@@ -3,14 +3,14 @@
 
 var Ava = require("rescript-ava/src/ava.cjs");
 var Json = require("./json/parser/json.cjs");
-var Parser = require("../src/parser.cjs");
 var Belt_List = require("rescript/lib/js/belt_List.js");
+var Res_parser = require("../src/res_parser.cjs");
 
 Ava.test("Separated by simple", (function (t) {
-        var parser = Parser.map(Parser.map(Parser.separatedBy1(Parser.$$char(/* 'a' */97), Parser.$$char(/* ',' */44)), (function (__x) {
+        var parser = Res_parser.map(Res_parser.map(Res_parser.separatedBy1(Res_parser.$$char(/* 'a' */97), Res_parser.$$char(/* ',' */44)), (function (__x) {
                     return Belt_List.map(__x, Json.charToString);
                   })), Json.concatStringList);
-        var match = Parser.run(parser, "a,a");
+        var match = Res_parser.run(parser, "a,a");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
           var exit = 0;
@@ -26,7 +26,7 @@ Ava.test("Separated by simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$2 = Parser.run(parser, "a,,a");
+        var match$2 = Res_parser.run(parser, "a,,a");
         if (match$2.TAG === /* Ok */0) {
           var match$3 = match$2._0;
           var exit$1 = 0;
@@ -42,7 +42,7 @@ Ava.test("Separated by simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$4 = Parser.run(parser, "a,a,a,a");
+        var match$4 = Res_parser.run(parser, "a,a,a,a");
         if (match$4.TAG === /* Ok */0) {
           var match$5 = match$4._0;
           var exit$2 = 0;
@@ -58,7 +58,7 @@ Ava.test("Separated by simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$6 = Parser.run(parser, "a");
+        var match$6 = Res_parser.run(parser, "a");
         if (match$6.TAG === /* Ok */0) {
           var match$7 = match$6._0;
           var exit$3 = 0;
@@ -74,7 +74,7 @@ Ava.test("Separated by simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$8 = Parser.run(parser, "a,b,c");
+        var match$8 = Res_parser.run(parser, "a,b,c");
         if (match$8.TAG === /* Ok */0) {
           var match$9 = match$8._0;
           var exit$4 = 0;
@@ -90,10 +90,10 @@ Ava.test("Separated by simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var manyWhitespace = Parser.many(Parser.$$char(/* ' ' */32));
-        var commaWithWhitespace = Parser.between(Parser.$$char(/* ',' */44), manyWhitespace, manyWhitespace);
-        var parser$1 = Parser.separatedBy1(Parser.$$char(/* 'a' */97), commaWithWhitespace);
-        var err = Parser.run(parser$1, "a, a,a,   a    ,a");
+        var manyWhitespace = Res_parser.many(Res_parser.$$char(/* ' ' */32));
+        var commaWithWhitespace = Res_parser.between(Res_parser.$$char(/* ',' */44), manyWhitespace, manyWhitespace);
+        var parser$1 = Res_parser.separatedBy1(Res_parser.$$char(/* 'a' */97), commaWithWhitespace);
+        var err = Res_parser.run(parser$1, "a, a,a,   a    ,a");
         if (err.TAG === /* Ok */0) {
           var match$10 = err._0;
           var match$11 = match$10[0];
@@ -130,7 +130,7 @@ Ava.test("Separated by simple", (function (t) {
         } else {
           Ava.fail(t, "Shouldn't fail with \"" + err._0 + "\"", undefined);
         }
-        var err$1 = Parser.run(parser$1, "a");
+        var err$1 = Res_parser.run(parser$1, "a");
         if (err$1.TAG === /* Ok */0) {
           var match$16 = err$1._0;
           var match$17 = match$16[0];
@@ -147,7 +147,7 @@ Ava.test("Separated by simple", (function (t) {
         } else {
           Ava.fail(t, "Shouldn't fail with \"" + err$1._0 + "\"", undefined);
         }
-        var err$2 = Parser.run(parser$1, "");
+        var err$2 = Res_parser.run(parser$1, "");
         if (err$2.TAG === /* Ok */0) {
           return Ava.fail(t, "Shouldn't succeed with \"" + err$2._0[1] + "\" remaining", undefined);
         } else {
@@ -156,10 +156,10 @@ Ava.test("Separated by simple", (function (t) {
       }));
 
 Ava.test("Separated by many simple", (function (t) {
-        var parser = Parser.map(Parser.map(Parser.separatedBy(Parser.$$char(/* 'a' */97), Parser.$$char(/* ',' */44)), (function (__x) {
+        var parser = Res_parser.map(Res_parser.map(Res_parser.separatedBy(Res_parser.$$char(/* 'a' */97), Res_parser.$$char(/* ',' */44)), (function (__x) {
                     return Belt_List.map(__x, Json.charToString);
                   })), Json.concatStringList);
-        var match = Parser.run(parser, "a,a");
+        var match = Res_parser.run(parser, "a,a");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
           var exit = 0;
@@ -175,7 +175,7 @@ Ava.test("Separated by many simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$2 = Parser.run(parser, "a,a,a,a");
+        var match$2 = Res_parser.run(parser, "a,a,a,a");
         if (match$2.TAG === /* Ok */0) {
           var match$3 = match$2._0;
           var exit$1 = 0;
@@ -191,7 +191,7 @@ Ava.test("Separated by many simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$4 = Parser.run(parser, "a");
+        var match$4 = Res_parser.run(parser, "a");
         if (match$4.TAG === /* Ok */0) {
           var match$5 = match$4._0;
           var exit$2 = 0;
@@ -207,7 +207,7 @@ Ava.test("Separated by many simple", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$6 = Parser.run(parser, "a,b,c");
+        var match$6 = Res_parser.run(parser, "a,b,c");
         if (match$6.TAG !== /* Ok */0) {
           return Ava.fail(t, undefined, undefined);
         }
@@ -219,11 +219,11 @@ Ava.test("Separated by many simple", (function (t) {
       }));
 
 Ava.test("Separated by at least one", (function (t) {
-        var atLeastOneComma = Parser.atLeastOne(Parser.$$char(/* ',' */44));
-        var parser = Parser.map(Parser.map(Parser.separatedBy(Parser.$$char(/* 'a' */97), atLeastOneComma), (function (__x) {
+        var atLeastOneComma = Res_parser.atLeastOne(Res_parser.$$char(/* ',' */44));
+        var parser = Res_parser.map(Res_parser.map(Res_parser.separatedBy(Res_parser.$$char(/* 'a' */97), atLeastOneComma), (function (__x) {
                     return Belt_List.map(__x, Json.charToString);
                   })), Json.concatStringList);
-        var match = Parser.run(parser, "a,,,a");
+        var match = Res_parser.run(parser, "a,,,a");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
           var exit = 0;
@@ -239,7 +239,7 @@ Ava.test("Separated by at least one", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var match$2 = Parser.run(parser, "a,,,,,a,,a,a,,,a");
+        var match$2 = Res_parser.run(parser, "a,,,,,a,,a,a,,,a");
         if (match$2.TAG === /* Ok */0) {
           var match$3 = match$2._0;
           var exit$1 = 0;
@@ -255,11 +255,11 @@ Ava.test("Separated by at least one", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var commaSeparatedByWhitespace = Parser.andThen(Parser.andThen(Json.manyWhitespace, Parser.$$char(/* ',' */44)), Json.manyWhitespace);
-        var parser$1 = Parser.map(Parser.map(Parser.separatedBy(Parser.$$char(/* 'a' */97), commaSeparatedByWhitespace), (function (__x) {
+        var commaSeparatedByWhitespace = Res_parser.andThen(Res_parser.andThen(Json.manyWhitespace, Res_parser.$$char(/* ',' */44)), Json.manyWhitespace);
+        var parser$1 = Res_parser.map(Res_parser.map(Res_parser.separatedBy(Res_parser.$$char(/* 'a' */97), commaSeparatedByWhitespace), (function (__x) {
                     return Belt_List.map(__x, Json.charToString);
                   })), Json.concatStringList);
-        var match$4 = Parser.run(parser$1, "a, a");
+        var match$4 = Res_parser.run(parser$1, "a, a");
         if (match$4.TAG === /* Ok */0) {
           var match$5 = match$4._0;
           var exit$2 = 0;
@@ -275,7 +275,7 @@ Ava.test("Separated by at least one", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$6 = Parser.run(parser$1, "a      ,a");
+        var match$6 = Res_parser.run(parser$1, "a      ,a");
         if (match$6.TAG === /* Ok */0) {
           var match$7 = match$6._0;
           var exit$3 = 0;
@@ -291,7 +291,7 @@ Ava.test("Separated by at least one", (function (t) {
         } else {
           Ava.fail(t, "Should not fail", undefined);
         }
-        var match$8 = Parser.run(parser$1, "a      ,a,a,a      ,a");
+        var match$8 = Res_parser.run(parser$1, "a      ,a,a,a      ,a");
         if (match$8.TAG !== /* Ok */0) {
           return Ava.fail(t, "Should not fail", undefined);
         }

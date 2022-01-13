@@ -1,5 +1,5 @@
 open Ava
-module P = Parser
+module P = Res_parser
 
 @scope("JSON") @val
 external stringify: 't => string = "stringify"

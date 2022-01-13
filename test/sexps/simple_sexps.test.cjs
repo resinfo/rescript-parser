@@ -2,9 +2,9 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
-var Parser = require("../../src/parser.cjs");
 var Caml_obj = require("rescript/lib/js/caml_obj.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
+var Res_parser = require("../../src/res_parser.cjs");
 var Simple_sexp_parser = require("./simple_sexp_parser.cjs");
 
 Ava.test("[Sexps] Char list to string", (function (t) {
@@ -27,7 +27,7 @@ Ava.test("[Sexps] Char list to string", (function (t) {
       }));
 
 function run(param) {
-  return Parser.run(Simple_sexp_parser.parser, param);
+  return Res_parser.run(Simple_sexp_parser.parser, param);
 }
 
 var okStringTests = [
@@ -52,7 +52,7 @@ Belt_Array.forEach(okStringTests, (function (param) {
         var expected = param[2];
         var input = param[1];
         return Ava.test("[Sexps.Simple] " + param[0] + " String", (function (t) {
-                      var err = Parser.run(Simple_sexp_parser.parser, input);
+                      var err = Res_parser.run(Simple_sexp_parser.parser, input);
                       if (err.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't failed with \"" + err._0 + "\"", undefined);
                       }
@@ -110,7 +110,7 @@ Belt_Array.forEach(okIntTests, (function (param) {
         var expected = param[2];
         var input = param[1];
         return Ava.test("[Sexps.Simple] " + param[0] + " Int", (function (t) {
-                      var err = Parser.run(Simple_sexp_parser.parser, input);
+                      var err = Res_parser.run(Simple_sexp_parser.parser, input);
                       if (err.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't failed with \"" + err._0 + "\"", undefined);
                       }
@@ -360,7 +360,7 @@ Belt_Array.forEach(okExpTests, (function (param) {
         var expected = param[2];
         var input = param[1];
         return Ava.test("[Sexps.Simple] " + param[0] + " Exp", (function (t) {
-                      var err = Parser.run(Simple_sexp_parser.parser, input);
+                      var err = Res_parser.run(Simple_sexp_parser.parser, input);
                       if (err.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't failed with \"" + err._0 + "\"", undefined);
                       }

@@ -1,6 +1,6 @@
 open Ava
 
-module P = Parser
+module P = Res_parser
 
 test("Separated by simple", t => {
   let parser =

@@ -1,4 +1,4 @@
-module P = Parser
+module P = Res_parser
 
 Ava.test("[JSON] valid true", t => {
   let result = P.run(Json.parse, "true")

@@ -3,25 +3,25 @@
 
 var Ava = require("rescript-ava/src/ava.cjs");
 var Char = require("rescript/lib/js/char.js");
-var Parser = require("../src/parser.cjs");
 var Caml_obj = require("rescript/lib/js/caml_obj.js");
+var Res_parser = require("../src/res_parser.cjs");
 var Caml_format = require("rescript/lib/js/caml_format.js");
 
-var sign = Parser.choice([
-      Parser.map(Parser.$$char(/* '+' */43), (function (param) {
+var sign = Res_parser.choice([
+      Res_parser.map(Res_parser.$$char(/* '+' */43), (function (param) {
               return /* Plus */0;
             })),
-      Parser.map(Parser.$$char(/* '-' */45), (function (param) {
+      Res_parser.map(Res_parser.$$char(/* '-' */45), (function (param) {
               return /* Subtract */1;
             })),
-      Parser.map(Parser.$$char(/* 'x' */120), (function (param) {
+      Res_parser.map(Res_parser.$$char(/* 'x' */120), (function (param) {
               return /* Multiply */2;
             }))
     ]);
 
-var manyWhitespace = Parser.many(Parser.$$char(/* ' ' */32));
+var manyWhitespace = Res_parser.many(Res_parser.$$char(/* ' ' */32));
 
-var singleDigit = Parser.between(Parser.map(Parser.map(Parser.map(Parser.satisfy(function ($$char) {
+var singleDigit = Res_parser.between(Res_parser.map(Res_parser.map(Res_parser.map(Res_parser.satisfy(function ($$char) {
                       if ($$char >= /* '0' */48) {
                         return $$char <= /* '9' */57;
                       } else {
@@ -33,7 +33,7 @@ var singleDigit = Parser.between(Parser.map(Parser.map(Parser.map(Parser.satisfy
                   };
           })), manyWhitespace, manyWhitespace);
 
-var parser = Parser.map(Parser.andThen(Parser.andThen(singleDigit, sign), singleDigit), (function (param) {
+var parser = Res_parser.map(Res_parser.andThen(Res_parser.andThen(singleDigit, sign), singleDigit), (function (param) {
         var match = param[0];
         return /* Expression */{
                 _0: match[0],
@@ -42,7 +42,7 @@ var parser = Parser.map(Parser.andThen(Parser.andThen(singleDigit, sign), single
               };
       }));
 
-var result = Parser.run(parser, " 1 +  4  ");
+var result = Res_parser.run(parser, " 1 +  4  ");
 
 Ava.test("Example.test", (function (t) {
         return Ava.true_(t, Caml_obj.caml_equal(result, {
