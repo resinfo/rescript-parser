@@ -11,9 +11,9 @@ Please be aware that this is considered alpha quality software. While there is a
 via NPM.
 
 ```
-yarn add rescript-parser
+yarn add @resinfo/parser
 # or
-npm install --save rescript-parser
+npm install --save @resinfo/parser
 ```
 
 ## Usage
