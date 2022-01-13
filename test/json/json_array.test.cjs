@@ -54,7 +54,6 @@ Ava.test("[JSON] Array succeeds", (function (t) {
             }
           }
           if (exit$1 === 1) {
-            console.log(Json.toString(x$3[0]));
             Ava.fail(t, shouldNotPass(x$3), undefined);
           }
           
@@ -82,7 +81,6 @@ Ava.test("[JSON] Array succeeds", (function (t) {
             }
           }
           if (exit$2 === 1) {
-            console.log(Json.toString(x$5[0]));
             Ava.fail(t, shouldNotPass(x$5), undefined);
           }
           
@@ -120,7 +118,6 @@ Ava.test("[JSON] Array succeeds", (function (t) {
             }
           }
           if (exit$3 === 1) {
-            console.log(Json.toString(x$7[0]));
             Ava.fail(t, shouldNotPass(x$7), undefined);
           }
           
@@ -158,7 +155,6 @@ Ava.test("[JSON] Array succeeds", (function (t) {
             }
           }
           if (exit$4 === 1) {
-            console.log(Json.toString(x$9[0]));
             Ava.fail(t, shouldNotPass(x$9), undefined);
           }
           
@@ -196,12 +192,10 @@ Ava.test("[JSON] Array succeeds", (function (t) {
             }
           }
           if (exit$5 === 1) {
-            console.log(Json.toString(x$11[0]));
             Ava.fail(t, shouldNotPass(x$11), undefined);
           }
           
         } else {
-          console.log(x$10._0);
           Ava.fail(t, shouldNotFail, undefined);
         }
         var x$12 = Parser.run(Json.parse, "[null, \"1\"]");

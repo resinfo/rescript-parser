@@ -17,50 +17,32 @@ test("[JSON] Array succeeds", t => {
 
   switch run(`["1"]`) {
   | Ok(Array(list{String("1")}), "") => t->pass()
-  | Ok(x) => {
-      Js.log(x->fst->Json.toString)
-      t->fail(~message=shouldNotPass(x), ())
-    }
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run(`[1]`) {
   | Ok(Array(list{Number("1")}), "") => t->pass()
-  | Ok(x) => {
-      Js.log(x->fst->Json.toString)
-      t->fail(~message=shouldNotPass(x), ())
-    }
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run(`[1, 2]`) {
   | Ok(Array(list{Number("1"), Number("2")}), "") => t->pass()
-  | Ok(x) => {
-      Js.log(x->fst->Json.toString)
-      t->fail(~message=shouldNotPass(x), ())
-    }
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run(`[1,2]`) {
   | Ok(Array(list{Number("1"), Number("2")}), "") => t->pass()
-  | Ok(x) => {
-      Js.log(x->fst->Json.toString)
-      t->fail(~message=shouldNotPass(x), ())
-    }
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run(`[1, "2"]`) {
   | Ok(Array(list{Number("1"), String("2")}), "") => t->pass()
-  | Ok(x) => {
-      Js.log(x->fst->Json.toString)
-      t->fail(~message=shouldNotPass(x), ())
-    }
-  | Error(xs) => {
-      xs->Js.log
-      t->fail(~message=shouldNotFail, ())
-    }
+  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
+  | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run(`[null, "1"]`) {

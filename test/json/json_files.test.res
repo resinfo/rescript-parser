@@ -17,7 +17,6 @@ let failures = readFiles("failures")
 let partials = readFiles("partials")
 
 passes->forEach(((name, file)) => {
-  // TODO: One or two errors here
   test(`[JSON] File "${name}" success`, t => {
     switch run(file) {
     | Ok(_, "") => t->pass(~message=`Should succeed`, ())
@@ -38,7 +37,6 @@ partials->forEach(((name, file)) => {
 })
 
 failures->forEach(((name, file)) => {
-  // TODO: Lots of errors here
   test(`[JSON] File "${name}" failure`, t => {
     switch run(file) {
     | Ok(ast, rest) =>
