@@ -2,11 +2,11 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
-var Json = require("./json.cjs");
+var Json = require("./parser/json.cjs");
 var Parser = require("../../src/parser.cjs");
 
 function run(param) {
-  return Parser.run(Json.json, param);
+  return Parser.run(Json.parse, param);
 }
 
 function shouldNotPass(param) {
@@ -16,7 +16,7 @@ function shouldNotPass(param) {
 var shouldNotFail = "Should not fail";
 
 Ava.test("[JSON] Array succeeds", (function (t) {
-        var x = Parser.run(Json.json, "[]");
+        var x = Parser.run(Json.parse, "[]");
         if (x.TAG === /* Ok */0) {
           var x$1 = x._0;
           var match = x$1[0];
@@ -33,7 +33,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$2 = Parser.run(Json.json, "[\"1\"]");
+        var x$2 = Parser.run(Json.parse, "[\"1\"]");
         if (x$2.TAG === /* Ok */0) {
           var x$3 = x$2._0;
           var match$1 = x$3[0];
@@ -61,7 +61,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$4 = Parser.run(Json.json, "[1]");
+        var x$4 = Parser.run(Json.parse, "[1]");
         if (x$4.TAG === /* Ok */0) {
           var x$5 = x$4._0;
           var match$4 = x$5[0];
@@ -89,7 +89,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$6 = Parser.run(Json.json, "[1, 2]");
+        var x$6 = Parser.run(Json.parse, "[1, 2]");
         if (x$6.TAG === /* Ok */0) {
           var x$7 = x$6._0;
           var match$7 = x$7[0];
@@ -127,7 +127,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$8 = Parser.run(Json.json, "[1,2]");
+        var x$8 = Parser.run(Json.parse, "[1,2]");
         if (x$8.TAG === /* Ok */0) {
           var x$9 = x$8._0;
           var match$12 = x$9[0];
@@ -165,7 +165,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$10 = Parser.run(Json.json, "[1, \"2\"]");
+        var x$10 = Parser.run(Json.parse, "[1, \"2\"]");
         if (x$10.TAG === /* Ok */0) {
           var x$11 = x$10._0;
           var match$17 = x$11[0];
@@ -204,7 +204,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
           console.log(x$10._0);
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$12 = Parser.run(Json.json, "[null, \"1\"]");
+        var x$12 = Parser.run(Json.parse, "[null, \"1\"]");
         if (x$12.TAG === /* Ok */0) {
           var x$13 = x$12._0;
           var match$22 = x$13[0];
@@ -236,7 +236,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$14 = Parser.run(Json.json, "[false, true, 14.2]");
+        var x$14 = Parser.run(Json.parse, "[false, true, 14.2]");
         if (x$14.TAG === /* Ok */0) {
           var x$15 = x$14._0;
           var match$26 = x$15[0];
@@ -278,7 +278,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$16 = Parser.run(Json.json, "[      false,     true, 14.2]");
+        var x$16 = Parser.run(Json.parse, "[      false,     true, 14.2]");
         if (x$16.TAG === /* Ok */0) {
           var x$17 = x$16._0;
           var match$32 = x$17[0];
@@ -320,7 +320,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$18 = Parser.run(Json.json, "[      false,     true,\n\n  14.2]");
+        var x$18 = Parser.run(Json.parse, "[      false,     true,\n\n  14.2]");
         if (x$18.TAG === /* Ok */0) {
           var x$19 = x$18._0;
           var match$38 = x$19[0];
@@ -362,7 +362,7 @@ Ava.test("[JSON] Array succeeds", (function (t) {
         } else {
           Ava.fail(t, shouldNotFail, undefined);
         }
-        var x$20 = Parser.run(Json.json, "[1, [1, true, [3, null]]]");
+        var x$20 = Parser.run(Json.parse, "[1, [1, true, [3, null]]]");
         if (x$20.TAG !== /* Ok */0) {
           return Ava.fail(t, shouldNotFail, undefined);
         }

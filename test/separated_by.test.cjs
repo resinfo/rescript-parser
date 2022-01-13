@@ -2,14 +2,14 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
+var Json = require("./json/parser/json.cjs");
 var Parser = require("../src/parser.cjs");
 var Belt_List = require("rescript/lib/js/belt_List.js");
-var Json_helpers = require("./json/json_helpers.cjs");
 
 Ava.test("Separated by simple", (function (t) {
         var parser = Parser.map(Parser.map(Parser.separatedBy1(Parser.$$char(/* 'a' */97), Parser.$$char(/* ',' */44)), (function (__x) {
-                    return Belt_List.map(__x, Json_helpers.charToString);
-                  })), Json_helpers.concatStringList);
+                    return Belt_List.map(__x, Json.charToString);
+                  })), Json.concatStringList);
         var match = Parser.run(parser, "a,a");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
@@ -157,8 +157,8 @@ Ava.test("Separated by simple", (function (t) {
 
 Ava.test("Separated by many simple", (function (t) {
         var parser = Parser.map(Parser.map(Parser.separatedBy(Parser.$$char(/* 'a' */97), Parser.$$char(/* ',' */44)), (function (__x) {
-                    return Belt_List.map(__x, Json_helpers.charToString);
-                  })), Json_helpers.concatStringList);
+                    return Belt_List.map(__x, Json.charToString);
+                  })), Json.concatStringList);
         var match = Parser.run(parser, "a,a");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
@@ -221,8 +221,8 @@ Ava.test("Separated by many simple", (function (t) {
 Ava.test("Separated by at least one", (function (t) {
         var atLeastOneComma = Parser.atLeastOne(Parser.$$char(/* ',' */44));
         var parser = Parser.map(Parser.map(Parser.separatedBy(Parser.$$char(/* 'a' */97), atLeastOneComma), (function (__x) {
-                    return Belt_List.map(__x, Json_helpers.charToString);
-                  })), Json_helpers.concatStringList);
+                    return Belt_List.map(__x, Json.charToString);
+                  })), Json.concatStringList);
         var match = Parser.run(parser, "a,,,a");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
@@ -255,10 +255,10 @@ Ava.test("Separated by at least one", (function (t) {
         } else {
           Ava.fail(t, undefined, undefined);
         }
-        var commaSeparatedByWhitespace = Parser.andThen(Parser.andThen(Json_helpers.manyWhitespace, Parser.$$char(/* ',' */44)), Json_helpers.manyWhitespace);
+        var commaSeparatedByWhitespace = Parser.andThen(Parser.andThen(Json.manyWhitespace, Parser.$$char(/* ',' */44)), Json.manyWhitespace);
         var parser$1 = Parser.map(Parser.map(Parser.separatedBy(Parser.$$char(/* 'a' */97), commaSeparatedByWhitespace), (function (__x) {
-                    return Belt_List.map(__x, Json_helpers.charToString);
-                  })), Json_helpers.concatStringList);
+                    return Belt_List.map(__x, Json.charToString);
+                  })), Json.concatStringList);
         var match$4 = Parser.run(parser$1, "a, a");
         if (match$4.TAG === /* Ok */0) {
           var match$5 = match$4._0;

@@ -3,7 +3,7 @@ open Ava
 module P = Parser
 module Helpers = Json_helpers
 
-let run = P.run(Helpers.digit)
+let run = P.run(Json.digit)
 
 let shouldNotPass = ((_, remaining)) => `Should not pass with "${remaining}" remaining`
 
@@ -48,7 +48,7 @@ test("Digit fails", t => {
   }
 })
 
-let run = P.run(Helpers.digits)
+let run = P.run(Json.digits)
 
 test("Digits succeeds", t => {
   let result = run("1")
@@ -92,7 +92,7 @@ test("Digits fails", t => {
   }
 })
 
-let run = P.run(Helpers.exponent)
+let run = P.run(Json.exponent)
 
 test("Exponent succeeds", t => {
   switch run("e-1234") {
@@ -160,7 +160,7 @@ test("Exponent fails", t => {
   }
 })
 
-let run = P.run(Helpers.fraction)
+let run = P.run(Json.fraction)
 
 test("Fraction succeeds", t => {
   switch run(".1234") {
@@ -218,7 +218,7 @@ test("Fraction fails", t => {
   }
 })
 
-let run = P.run(Helpers.sign)
+let run = P.run(Json.sign)
 
 test("Sign succeeds", t => {
   switch run("-") {
@@ -261,7 +261,7 @@ test("Sign fails", t => {
   }
 })
 
-let run = P.run(Helpers.integer)
+let run = P.run(Json.integer)
 
 test("Integer succeeds", t => {
   switch run("1") {
@@ -327,7 +327,7 @@ test("Integer fails", t => {
   }
 })
 
-let run = P.run(Helpers.unescapedChar)
+let run = P.run(Json.unescapedChar)
 
 test("Unescaped char succeeds", t => {
   switch run("a") {
@@ -404,7 +404,7 @@ test("Unescaped char fails", t => {
   }
 })
 
-let run = P.run(Helpers.escapedChar)
+let run = P.run(Json.escapedChar)
 
 let successes = [
   ("\\\"", "\""),
@@ -464,7 +464,7 @@ test("Escaped char fails", t => {
   }
 })
 
-let run = P.run(Helpers.unicodeChar)
+let run = P.run(Json.unicodeChar)
 
 test("Unicode char succeeds", t => {
   switch run("\u0041") {

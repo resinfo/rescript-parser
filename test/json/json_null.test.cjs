@@ -2,12 +2,12 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
-var Json = require("./json.cjs");
+var Json = require("./parser/json.cjs");
 var Parser = require("../../src/parser.cjs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 
 function run(param) {
-  return Parser.run(Json.json, param);
+  return Parser.run(Json.parse, param);
 }
 
 var validNulls = [
@@ -32,7 +32,7 @@ var validNulls = [
 Belt_Array.forEach(validNulls, (function (param) {
         var input = param[1];
         return Ava.test("[JSON] Valid \"null\" " + param[0], (function (t) {
-                      var error = Parser.run(Json.json, input);
+                      var error = Parser.run(Json.parse, input);
                       if (error.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with: \"" + error._0 + "\"", undefined);
                       }
@@ -77,7 +77,7 @@ Belt_Array.forEach(partiallyValidNulls, (function (param) {
         var remaining = param[2];
         var input = param[1];
         return Ava.test("[JSON] Partially valid \"null\" " + param[0], (function (t) {
-                      var error = Parser.run(Json.json, input);
+                      var error = Parser.run(Json.parse, input);
                       if (error.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with: \"" + error._0 + "\"", undefined);
                       }
@@ -112,7 +112,7 @@ var invalid = [
 Belt_Array.forEach(invalid, (function (param) {
         var input = param[1];
         return Ava.test("[JSON] Invalid \"null\" " + param[0], (function (t) {
-                      var error = Parser.run(Json.json, input);
+                      var error = Parser.run(Json.parse, input);
                       if (error.TAG !== /* Ok */0) {
                         return Ava.pass(t, "Should fail with: \"" + error._0 + "\"", undefined);
                       }

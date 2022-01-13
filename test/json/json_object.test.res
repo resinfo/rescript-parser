@@ -4,7 +4,7 @@ module P = Parser
 @scope("JSON") @val
 external stringify: 't => string = "stringify"
 
-let run = P.run(Json.json)
+let run = P.run(Json.parse)
 
 let okInputs = [
   ("Empty Object", "{}", Json.Object(list{})),

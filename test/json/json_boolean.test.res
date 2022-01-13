@@ -1,7 +1,7 @@
 module P = Parser
 
 Ava.test("[JSON] valid true", t => {
-  let result = P.run(Json.json, "true")
+  let result = P.run(Json.parse, "true")
 
   switch result {
   | Ok((True, "")) => t->Ava.pass()
@@ -15,7 +15,7 @@ Ava.test("[JSON] valid true", t => {
 })
 
 Ava.test("[JSON] invalid true", t => {
-  let result = P.run(Json.json, "ttrue")
+  let result = P.run(Json.parse, "ttrue")
 
   switch result {
   | Ok((Null, _remaining)) => t->Ava.fail()
@@ -23,7 +23,7 @@ Ava.test("[JSON] invalid true", t => {
   | Error(_) => t->Ava.pass(~message=`Parsing "true_" should return an error message`, ())
   }
 
-  let result = P.run(Json.json, "false")
+  let result = P.run(Json.parse, "false")
 
   switch result {
   | Ok((True, _remaining)) => t->Ava.fail()
@@ -31,7 +31,7 @@ Ava.test("[JSON] invalid true", t => {
   | Error(_) => t->Ava.pass(~message=`Parsing "true_" should return an error message`, ())
   }
 
-  let result = P.run(Json.json, "-true")
+  let result = P.run(Json.parse, "-true")
 
   switch result {
   | Ok((True, _remaining)) => t->Ava.fail()
@@ -41,7 +41,7 @@ Ava.test("[JSON] invalid true", t => {
 })
 
 Ava.test("[JSON] valid false", t => {
-  let result = P.run(Json.json, "false")
+  let result = P.run(Json.parse, "false")
 
   switch result {
   | Ok((False, "")) => t->Ava.pass()
@@ -55,7 +55,7 @@ Ava.test("[JSON] valid false", t => {
 })
 
 Ava.test("[JSON] invalid false", t => {
-  let result = P.run(Json.json, "tfalse")
+  let result = P.run(Json.parse, "tfalse")
 
   switch result {
   | Ok((False, _remaining)) => t->Ava.fail()
@@ -63,7 +63,7 @@ Ava.test("[JSON] invalid false", t => {
   | Error(_) => t->Ava.pass(~message=`Parsing "false_" should return an error message`, ())
   }
 
-  let result = P.run(Json.json, "{false")
+  let result = P.run(Json.parse, "{false")
 
   switch result {
   | Ok((False, _remaining)) => t->Ava.fail()

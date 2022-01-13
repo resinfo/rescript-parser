@@ -3,7 +3,7 @@ open Ava
 module P = Parser
 
 let number = Json.number
-let run = P.run(Json.json)
+let run = P.run(Json.parse)
 
 test("[JSON] Number succeeds", t => {
   switch run("1234") {

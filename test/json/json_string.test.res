@@ -2,7 +2,7 @@ open Ava
 
 module P = Parser
 
-let run = P.run(Json.json)
+let run = P.run(Json.parse)
 
 test("[JSON] String succeeds", t => {
   switch run(`"1"`) {

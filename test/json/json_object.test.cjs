@@ -2,13 +2,13 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
-var Json = require("./json.cjs");
+var Json = require("./parser/json.cjs");
 var Parser = require("../../src/parser.cjs");
 var Caml_obj = require("rescript/lib/js/caml_obj.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 
 function run(param) {
-  return Parser.run(Json.json, param);
+  return Parser.run(Json.parse, param);
 }
 
 var okInputs = [
@@ -418,7 +418,7 @@ Belt_Array.forEach(okInputs, (function (param) {
         var expected = param[2];
         var input = param[1];
         return Ava.test("[JSON] " + param[0] + " succeeds", (function (t) {
-                      var err = Parser.run(Json.json, input);
+                      var err = Parser.run(Json.parse, input);
                       if (err.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with \"" + err._0 + "\"", undefined);
                       }
@@ -508,7 +508,7 @@ Belt_Array.forEach(partiallyOkInputs, (function (param) {
         var expected = param[2];
         var input = param[1];
         return Ava.test("[JSON] " + param[0] + " partially succeeds", (function (t) {
-                      var err = Parser.run(Json.json, input);
+                      var err = Parser.run(Json.parse, input);
                       if (err.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with \"" + err._0 + "\"", undefined);
                       }
@@ -533,7 +533,7 @@ var erroneousInputs = [
 
 Belt_Array.forEachWithIndex(erroneousInputs, (function (index, input) {
         return Ava.test("[JSON] Object " + String(index) + " fails", (function (t) {
-                      var err = Parser.run(Json.json, input);
+                      var err = Parser.run(Json.parse, input);
                       if (err.TAG === /* Ok */0) {
                         return Ava.fail(t, "Shouldn't succeed with \"" + err._0[1] + "\" remaining", undefined);
                       } else {

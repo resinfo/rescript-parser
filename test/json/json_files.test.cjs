@@ -3,12 +3,12 @@
 
 var Fs = require("fs");
 var Ava = require("rescript-ava/src/ava.cjs");
-var Json = require("./json.cjs");
+var Json = require("./parser/json.cjs");
 var Parser = require("../../src/parser.cjs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 
 function run(param) {
-  return Parser.run(Json.json, param);
+  return Parser.run(Json.parse, param);
 }
 
 function readFiles(dirname) {
@@ -34,7 +34,7 @@ var partials = readFiles("partials");
 Belt_Array.forEach(passes, (function (param) {
         var file = param[1];
         return Ava.test("[JSON] File \"" + param[0] + "\" success", (function (t) {
-                      var msg = Parser.run(Json.json, file);
+                      var msg = Parser.run(Json.parse, file);
                       if (msg.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with \"" + msg._0 + "\"", undefined);
                       }
@@ -50,7 +50,7 @@ Belt_Array.forEach(passes, (function (param) {
 Belt_Array.forEach(partials, (function (param) {
         var file = param[1];
         return Ava.test("[JSON] File \"" + param[0] + "\" partial success", (function (t) {
-                      var msg = Parser.run(Json.json, file);
+                      var msg = Parser.run(Json.parse, file);
                       if (msg.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with \"" + msg._0 + "\"", undefined);
                       }
@@ -66,7 +66,7 @@ Belt_Array.forEach(partials, (function (param) {
 Belt_Array.forEach(failures, (function (param) {
         var file = param[1];
         return Ava.test("[JSON] File \"" + param[0] + "\" failure", (function (t) {
-                      var msg = Parser.run(Json.json, file);
+                      var msg = Parser.run(Json.parse, file);
                       if (msg.TAG !== /* Ok */0) {
                         return Ava.pass(t, "Should fail with \"" + msg._0 + "\"", undefined);
                       }
