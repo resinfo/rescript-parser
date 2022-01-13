@@ -2,6 +2,7 @@
   "name": "@resinfo/parser",
   "version": "1.0.0-alpha",
   "main": "index.js",
+  "private": false,
   "repository": "https://github.com/resinfo/rescript-parser.git",
   "description": "@resinfo/parser is a parser combinator library for ReScript.",
   "author": "Oliver Fencott <oliverfencott@gmail.com>",
