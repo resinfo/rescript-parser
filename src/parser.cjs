@@ -84,7 +84,7 @@ function satisfy(predicate) {
                 } else {
                   return {
                           TAG: /* Error */1,
-                          _0: "Unexpected " + Char.escaped($$char)
+                          _0: "Unexpected " + Char.escaped($$char) + ".\n" + input.slice(0, 30)
                         };
                 }
               } else {

@@ -52,7 +52,10 @@ let satisfy: satisfy = predicate => Parser(
     switch char {
     | None => Error("No more input")
     | Some(char) if predicate(char) => Ok((char, String.sub(input, 1, String.length(input) - 1)))
-    | Some(char) => Error("Unexpected " ++ Char.escaped(char))
+    | Some(char) =>
+      Error(
+        "Unexpected " ++ Char.escaped(char) ++ ".\n" ++ input->Js.String2.slice(~from=0, ~to_=30),
+      )
     }
   },
 )

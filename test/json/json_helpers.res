@@ -184,7 +184,14 @@ let number = {
 let doubleQuote = P.char('"')
 
 let unescapedChar = {
-  P.satisfy(ch => ch !== '\\' && ch !== '"')->P.map(int_of_char)->P.map(Js.String.fromCharCode)
+  P.satisfy(ch =>
+    switch ch {
+    | '\\' | '"' | '\b' .. '\r' => false
+    | _ => true
+    }
+  )
+  ->P.map(int_of_char)
+  ->P.map(Js.String.fromCharCode)
 }
 
 let escapedChar = {
@@ -193,7 +200,7 @@ let escapedChar = {
     ("\\\\", '\\'), // reverse solidus
     ("\\/", '/'), // solidus
     ("\\b", '\b'), // backspace
-    // ("\f", 'f'), // formfeed (Not implementing)
+    // ("\\f", char_of_int(12) /* '\f' */), // formfeed (not implementing)
     ("\\n", '\n'), // newline
     ("\\r", '\r'), // cr
     ("\\t", '\t'), // tab

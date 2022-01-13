@@ -696,10 +696,11 @@ Belt_Array.forEach(successes, (function (param) {
                       }
                       var match = err._0;
                       var remaining = match[1];
-                      if (remaining === "" && match[0] === expected) {
+                      var x = match[0];
+                      if (remaining === "" && x === expected) {
                         return Ava.pass(t, undefined, undefined);
                       }
-                      return Ava.fail(t, "Should not succeed with \"" + remaining + "\" remaining", undefined);
+                      return Ava.fail(t, "Should not succeed with \"" + x + "\" and \"" + remaining + "\" remaining", undefined);
                     }));
       }));
 

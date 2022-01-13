@@ -420,7 +420,8 @@ successes->Belt.Array.forEach(((input, expected)) => {
   test(`[Escaped char] "${input}" succeeds`, t => {
     switch run(input) {
     | Ok(x, "") if x == expected => t->pass()
-    | Ok(_, remaining) => t->fail(~message=`Should not succeed with "${remaining}" remaining`, ())
+    | Ok(j, remaining) =>
+      t->fail(~message=`Should not succeed with "${j}" and "${remaining}" remaining`, ())
     | Error(err) => t->fail(~message=`Should not fail with "${err}"`, ())
     }
   })

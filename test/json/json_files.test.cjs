@@ -33,7 +33,7 @@ var partials = readFiles("partials");
 
 Belt_Array.forEach(passes, (function (param) {
         var file = param[1];
-        return Ava.skip("[JSON] File \"" + param[0] + "\" success", (function (t) {
+        return Ava.test("[JSON] File \"" + param[0] + "\" success", (function (t) {
                       var msg = Parser.run(Json.json, file);
                       if (msg.TAG !== /* Ok */0) {
                         return Ava.fail(t, "Shouldn't fail with \"" + msg._0 + "\"", undefined);
@@ -65,7 +65,7 @@ Belt_Array.forEach(partials, (function (param) {
 
 Belt_Array.forEach(failures, (function (param) {
         var file = param[1];
-        return Ava.skip("[JSON] File \"" + param[0] + "\" failure", (function (t) {
+        return Ava.test("[JSON] File \"" + param[0] + "\" failure", (function (t) {
                       var msg = Parser.run(Json.json, file);
                       if (msg.TAG !== /* Ok */0) {
                         return Ava.pass(t, "Should fail with \"" + msg._0 + "\"", undefined);

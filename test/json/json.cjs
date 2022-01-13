@@ -27,7 +27,7 @@ function toString(t) {
       case /* Array */3 :
           var stringify = function (xs) {
             if (xs) {
-              return "\n" + toString(xs.hd) + stringify(xs.tl);
+              return toString(xs.hd) + stringify(xs.tl);
             } else {
               return "";
             }
@@ -86,7 +86,7 @@ var json = Parser.makeRecursive(function (p) {
       var empty = Parser.map(Parser.between(Json_helpers.manyWhitespace, Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93)), (function (param) {
               return /* [] */0;
             }));
-      var nonEmpty = Parser.map(Parser.between(Parser.separatedBy(Parser.many(p), Parser.$$char(/* ',' */44)), Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93)), Belt_List.flatten);
+      var nonEmpty = Parser.map(Parser.between(Parser.separatedBy1(Parser.many(p), Parser.between(Parser.$$char(/* ',' */44), Json_helpers.manyWhitespace, Json_helpers.manyWhitespace)), Parser.$$char(/* '[' */91), Parser.$$char(/* ']' */93)), Belt_List.flatten);
       var arrayElements = Parser.choice([
             empty,
             nonEmpty

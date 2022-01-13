@@ -90,10 +90,10 @@ var number = Parser.map(Parser.andThen(Parser.andThen(integer, fraction$1), expo
 var doubleQuote = Parser.$$char(/* '"' */34);
 
 var unescapedChar = Parser.map(Parser.map(Parser.satisfy(function (ch) {
-              if (ch !== /* '\\' */92) {
-                return ch !== /* '"' */34;
+              if (ch > 34 || ch < 8) {
+                return ch !== 92;
               } else {
-                return false;
+                return !(ch > 33 || ch < 14);
               }
             }), (function (prim) {
             return prim;

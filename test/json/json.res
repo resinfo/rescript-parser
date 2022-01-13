@@ -127,7 +127,7 @@ let rec toString = t => {
       let rec stringify = xs => {
         switch xs {
         | list{} => ""
-        | list{head, ...rest} => "\n" ++ toString(head) ++ stringify(rest)
+        | list{head, ...rest} => toString(head) ++ stringify(rest)
         }
       }
 
@@ -157,7 +157,7 @@ let json = P.makeRecursive(p => {
 
     let nonEmpty =
       P.many(p)
-      ->P.separatedBy(P.char(','))
+      ->P.separatedBy1(P.char(',')->P.between(manyWhitespace, manyWhitespace))
       ->P.between(P.char('['), P.char(']'))
       ->P.map(Belt.List.flatten(_))
 
