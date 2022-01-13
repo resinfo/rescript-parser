@@ -189,14 +189,14 @@ let unescapedChar = {
 
 let escapedChar = {
   [
-    ("\/", '/'),
-    ("\\\"", '"'),
-    ("\\", '\\'),
-    ("\b", '\b'),
-    // ("\f", 'f'), // Not implementing
-    ("\n", '\n'),
-    ("\r", '\r'),
-    ("\t", '\t'),
+    ("\\\"", '"'), // quote
+    ("\\\\", '\\'), // reverse solidus
+    ("\\/", '/'), // solidus
+    ("\\b", '\b'), // backspace
+    // ("\f", 'f'), // formfeed (Not implementing)
+    ("\\n", '\n'), // newline
+    ("\\r", '\r'), // cr
+    ("\\t", '\t'), // tab
   ]
   ->Belt.Array.map(((toMatch, result)) => {
     P.string(toMatch)->P.map(_ => result->int_of_char->Js.String.fromCharCode)

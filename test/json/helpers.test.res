@@ -406,92 +406,44 @@ test("Unescaped char fails", t => {
 
 let run = P.run(Helpers.escapedChar)
 
-test("Escaped char succeeds", t => {
-  switch run("\\\"") {
-  | Ok(`"`, "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
+let successes = [
+  ("\\\"", "\""),
+  ("\\\\", "\\"),
+  ("\\/", "/"),
+  ("\\b", "\b"),
+  ("\\n", "\n"),
+  ("\\r", "\r"),
+  ("\\t", "\t"),
+]
 
-  switch run("\\") {
-  | Ok("\\", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\/") {
-  | Ok("/", "") => t->pass()
-  | Ok(_, remaining) => t->fail(~message=`Should not succeed with "${remaining}" remaining`, ())
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("\b") {
-  | Ok("\b", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\n") {
-  | Ok("\n", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\r") {
-  | Ok("\r", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\t") {
-  | Ok("\t", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
+successes->Belt.Array.forEach(((input, expected)) => {
+  test(`[Escaped char] "${input}" succeeds`, t => {
+    switch run(input) {
+    | Ok(x, "") if x == expected => t->pass()
+    | Ok(_, remaining) => t->fail(~message=`Should not succeed with "${remaining}" remaining`, ())
+    | Error(err) => t->fail(~message=`Should not fail with "${err}"`, ())
+    }
+  })
 })
 
-test("Escaped char partially succeeds", t => {
-  switch run("\\\"  ") {
-  | Ok(`"`, "  ") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
+let partialSuccesses = [
+  ("\\\"  ", `"`, "  "),
+  ("\\\\hello", "\\", "hello"),
+  ("\/\/", "/", "\/"),
+  ("\\b-1234gfd", "\b", "-1234gfd"),
+  ("\\n l ll ll \n", "\n", " l ll ll \n"),
+  ("\\r\\n", "\r", "\\n"),
+  ("\\t\lll", "\t", "\lll"),
+]
 
-  switch run("\\hello") {
-  | Ok("\\", "hello") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\/\/") {
-  | Ok("/", "\/") => t->pass()
-  | Ok(_, remaining) => t->fail(~message=`Should not succeed with "${remaining}" remaining`, ())
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("\b-1234gfd") {
-  | Ok("\b", "-1234gfd") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\n l ll ll \n") {
-  | Ok("\n", " l ll ll \n") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\r\n") {
-  | Ok("\r", "\n") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
-
-  switch run("\t\lll") {
-  | Ok("\t", "\lll") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail()
-  }
+partialSuccesses->Belt.Array.forEach(((input, expected, remaining)) => {
+  test(`[Escaped char] "${input}" partially succeeds`, t => {
+    switch run(input) {
+    | Ok(e, r) if e == expected && r == remaining => t->pass()
+    | Ok(e, r) => t->fail(~message=`Shouldn't succeed with "${e}" and "${r}" remaining`, ())
+    | Error(err) => t->fail(~message=`Shouldn't fail with "${err}"`, ())
+    }
+  })
 })
 
 test("Escaped char fails", t => {

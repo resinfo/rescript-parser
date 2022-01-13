@@ -103,31 +103,31 @@ var unescapedChar = Parser.map(Parser.map(Parser.satisfy(function (ch) {
 
 var escapedChar = Parser.choice(Belt_Array.map([
           [
-            "\\/",
-            /* '/' */47
-          ],
-          [
             "\\\"",
             /* '"' */34
           ],
           [
-            "\\",
+            "\\\\",
             /* '\\' */92
           ],
           [
-            "\b",
+            "\\/",
+            /* '/' */47
+          ],
+          [
+            "\\b",
             /* '\b' */8
           ],
           [
-            "\n",
+            "\\n",
             /* '\n' */10
           ],
           [
-            "\r",
+            "\\r",
             /* '\r' */13
           ],
           [
-            "\t",
+            "\\t",
             /* '\t' */9
           ]
         ], (function (param) {
