@@ -16,8 +16,7 @@
   "scripts": {
     "make": "rescript build -with-deps",
     "test": "ava",
-    "test:watch": "ava --watch",
-    "write": "onchange -i -k 'test/sexps/lang_sexp_generator.cjs' 'test.clj' -- node 'test/watch.cjs'"
+    "test:watch": "ava --watch"
   },
   "ava": {
     "files": [
