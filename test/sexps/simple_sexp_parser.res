@@ -17,6 +17,23 @@ type rec t =
   | String(string)
   | Exp(list<t>)
 
+let rec toString = t => {
+  switch t {
+  | Int(x) => `Int(${x})`
+  | String(x) => `String("${x}")`
+  | Exp(exps) => {
+      let rec loop = lst => {
+        switch lst {
+        | list{} => ""
+        | list{head, ...rest} => toString(head) ++ ", " ++ loop(rest)
+        }
+      }
+
+      `Exp(${loop(exps)})`
+    }
+  }
+}
+
 let quotedString = {
   let doubleQuote = P.char('"')
   let anyChar = P.satisfy(char => char != '"')

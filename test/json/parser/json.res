@@ -84,13 +84,7 @@ let integer = {
     ->P.map((((sign, digit), rest)) => charToString(sign) ++ charToString(digit) ++ rest)
   }
 
-  P.choice([
-    //
-    oneThroughNineThenDigits,
-    digit,
-    signThenOneThroughNineThenDigits,
-    signThenDigit,
-  ])
+  P.choice([oneThroughNineThenDigits, digit, signThenOneThroughNineThenDigits, signThenDigit])
 }
 
 let jsonNumber = {
