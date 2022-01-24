@@ -8,6 +8,7 @@ type number = SingleDigit(int)
 type expression = Expression(number, sign, number)
 
 // Parse sign and transform into AST node
+
 type sign_ = P.t<sign>
 let sign: sign_ = P.choice([
   P.char('+')->P.map(_ => Plus),
@@ -18,7 +19,7 @@ let sign: sign_ = P.choice([
 // Helper that returns any parser
 // that's found to be wrapped in whitespace
 type manyWhitespace = P.t<list<char>>
-let manyWhitespace: manyWhitespace = P.many(P.char(' '))
+let manyWhitespace: manyWhitespace = P.many(P.anyOf([' ', '\n']))
 
 // Parse single digit and transform into AST node
 type singleDigit = P.t<number>
@@ -38,10 +39,80 @@ let parser: parser =
   ->P.map((((left, sign), right)) => Expression(left, sign, right))
 
 // Run our parser against an input string.
-type result = result<(expression, string), string>
+type result = P.parseResult<expression>
 let result: result = P.run(parser, " 1 +  4  ")
 
-test("Example.test", t => {
+test("[Example.test] success", t => {
   // Result is a tuple of a valid AST and zero input left to parse.
-  t->true_(result == Ok(Expression(SingleDigit(1), Plus, SingleDigit(4)), ""), ())
+  switch result {
+  | Ok(Expression(SingleDigit(1), Plus, SingleDigit(4)), state) if P.State.remaining(state) == "" =>
+    t->pass()
+  | Ok(e, s) => {
+      Js.log(e)
+      t->fail(~message=`Succeeded with "${s->P.State.remaining}"`, ())
+    }
+  | Error(error) => t->fail(~message=error.message, ())
+  }
+})
+
+test("[Example.test] error", t => {
+  switch P.run(
+    parser,
+    `
+  
+  
+  
+  
+  
+  
+  1
+  
+  
+  ++ e`,
+  ) {
+  | Error(error) => {
+      let {state} = error
+      let {input, position} = state
+      let line = position.line
+      let index = position.index
+      let col = position.col
+      let lineStart = position.lineStart
+
+      let lineFrame = Js.String.slice(input, ~from=lineStart, ~to_=index + 10)
+
+      let padding = ` ┆`
+
+      let codeFrames = {
+        let rec loop = lst => {
+          switch lst {
+          | list{} => ""
+          | list{(line, head), ...rest} =>
+            loop(rest) ++
+            "\n" ++ {
+              let separator = string_of_int(line) ++ padding
+
+              separator ++ head
+            }
+          }
+        }
+
+        P.State.makeFrames(error.state)->loop
+      }
+
+      let separator = string_of_int(line) ++ padding
+      let errorMessage =
+        codeFrames ++
+        "\n" ++
+        separator ++
+        lineFrame ++
+        "\n" ++
+        Js.String.repeat(col + Js.String.length(separator) - 1, " ") ++
+        "^ " ++
+        error.message
+
+      Js.log(errorMessage)
+      t->pass(~message=error.message, ())
+    }
+  | Ok(_) => t->fail(~message=`Shouldn't succeed`, ())
+  }
 })

@@ -1,6 +1,109 @@
-type t<'t> = Parser(string => result<('t, string), string>)
+module Position = {
+  type t = {
+    prevLines: list<(int, int)>,
+    index: int,
+    lineStart: int,
+    line: int,
+    col: int,
+  }
 
-type run<'a> = (t<'a>, string) => result<('a, string), string>
+  let make = () => {
+    prevLines: list{},
+    index: 0,
+    lineStart: 0,
+    line: 1,
+    col: 1,
+  }
+
+  let newline = t => {
+    prevLines: list{(t.lineStart, t.index), ...t.prevLines},
+    index: t.index + 1,
+    lineStart: t.index + 1,
+    line: t.line + 1,
+    col: 1,
+  }
+
+  let next = t => {
+    ...t,
+    col: t.col + 1,
+    index: t.index + 1,
+  }
+}
+
+module State = {
+  type t = {
+    position: Position.t,
+    input: string,
+  }
+
+  let getChar = t => {
+    try String.get(t.input, t.position.index)->Some catch {
+    | _ => None
+    }
+  }
+
+  let next = t => {
+    switch t->getChar {
+    | Some('\n' | '\r') => {
+        ...t,
+        position: t.position->Position.newline,
+      }
+    | Some(_) => {
+        ...t,
+        position: t.position->Position.next,
+      }
+    | None => t
+    }
+  }
+
+  let getPosition = t => t.position
+
+  let fromString = input => {
+    position: Position.make(),
+    input: input,
+  }
+
+  let remaining = t => {
+    Js.String.sliceToEnd(t.input, ~from=t.position.index)
+  }
+
+  let makeFrames = state => {
+    let {input, position} = state
+    let line = position.line
+
+    let prevLines = {
+      let {prevLines} = position
+      let size = Js.Math.min_int(4, prevLines->Belt.List.size)
+      let lines = Belt.List.take(prevLines, size)
+
+      lines
+      ->Belt.Option.getWithDefault(list{})
+      ->Belt.List.mapWithIndex((index, (from, to_)) => {
+        let lineNumber = line - index - 1
+
+        (lineNumber, Js.String.slice(input, ~from, ~to_))
+      })
+    }
+
+    prevLines
+  }
+}
+
+module Error = {
+  type t = {message: string, state: State.t}
+
+  let fromInput = (state, message) => {
+    state: state,
+    message: message,
+  }
+}
+
+type state = State.t
+type error = Error.t
+type parseResult<'a> = result<('a, state), error>
+type t<'a> = Parser(state => parseResult<'a>)
+
+type run<'a> = (t<'a>, string) => parseResult<'a>
 type bind<'a, 'b> = (t<'a>, 'a => t<'b>) => t<'b>
 type return<'a> = 'a => t<'a>
 type map<'a, 'b> = (t<'a>, 'a => 'b) => t<'b>
@@ -13,7 +116,7 @@ type anyOf = array<char> => t<char>
 type apply<'a, 'b> = (t<'a>, t<'a => 'b>) => t<'b>
 type lift2<'a, 'b, 'c> = (t<'a>, ('a, 'b) => 'c, t<'b>) => t<'c>
 type sequence<'a> = list<t<'a>> => t<list<'a>>
-type zeroOrMore<'a> = (t<'a>, string) => (list<'a>, string)
+type zeroOrMore<'a> = (t<'a>, state) => (list<'a>, state)
 type many<'a> = t<'a> => t<list<'a>>
 type atLeastOne<'a> = t<'a> => t<list<'a>>
 type keepLeft<'a, 'b> = (t<'a>, t<'b>) => t<'a>
@@ -25,17 +128,21 @@ type separatedBy1<'a, 'b> = (t<'a>, t<'b>) => t<list<'a>>
 type makeRecursive<'a> = (t<'a> => t<'a>) => t<'a>
 type makeForwardRef<'a> = unit => (t<'a>, ref<t<'a>>)
 
-let run: run<'a> = (t, input) => {
+let runOnInput = (t, input) => {
   let Parser(run) = t
 
   run(input)
 }
 
+let run: run<'a> = (t, inputString) => {
+  runOnInput(t, State.fromString(inputString))
+}
+
 let bind: bind<'a, 'b> = (t, fn) => Parser(
   input =>
-    switch run(t, input) {
+    switch runOnInput(t, input) {
     | Error(msg) => Error(msg)
-    | Ok((value, remaining)) => value->fn->run(remaining)
+    | Ok((value, remaining)) => value->fn->runOnInput(remaining)
     },
 )
 
@@ -45,17 +152,17 @@ let andThen: andThen<'a, 'b> = (p1, p2) => p1->bind(res1 => p2->bind(res2 => ret
 
 let satisfy: satisfy = predicate => Parser(
   input => {
-    let char = try String.get(input, 0)->Some catch {
-    | _ => None
-    }
+    let char = State.getChar(input)
 
     switch char {
-    | None => Error("No more input")
-    | Some(char) if predicate(char) => Ok((char, String.sub(input, 1, String.length(input) - 1)))
+    | None => Error({message: "No more input", state: input})
+    | Some(char) if predicate(char) => Ok((char, State.next(input)))
     | Some(char) =>
-      Error(
-        "Unexpected " ++ Char.escaped(char) ++ ".\n" ++ input->Js.String2.slice(~from=0, ~to_=30),
-      )
+      Error({
+        // `Unexpected "` ++ Char.escaped(char) ++ `".\n` ++ input->Js.String2.slice(~from=0, ~to_=30),
+        message: `Unexpected "` ++ Char.escaped(char) ++ `".\n`,
+        state: input,
+      })
     }
   },
 )
@@ -63,17 +170,20 @@ let satisfy: satisfy = predicate => Parser(
 let char: char_ = expected => satisfy(Char.equal(expected))
 let orElse: orElse<'a> = (parser1, parser2) => Parser(
   input => {
-    let result = run(parser1, input)
+    let result = runOnInput(parser1, input)
 
     switch result {
     | Ok(_) => result
-    | Error(_) => run(parser2, input)
+    | Error(_) => runOnInput(parser2, input)
     }
   },
 )
 
 let choice: choice<'a> = parsers =>
-  parsers->Belt.Array.reduce(Parser(_ => Error("Initial parser")), orElse)
+  parsers->Belt.Array.reduce(
+    Parser(input => Error({message: "Initial parser", state: input})),
+    orElse,
+  )
 
 let anyOf: anyOf = chars => chars->Belt.Array.map(char)->choice
 
@@ -89,7 +199,7 @@ let rec sequence: sequence<'a> = (parsers: list<t<'a>>) =>
   }
 
 let rec zeroOrMore: zeroOrMore<'a> = (parser, input) =>
-  switch run(parser, input) {
+  switch runOnInput(parser, input) {
   | Error(_) => (list{}, input)
   | Ok((first, input)) =>
     let (values, input) = zeroOrMore(parser, input)
@@ -137,7 +247,7 @@ let makeForwardRef: makeForwardRef<'t> = () => {
   let parser = Parser(_ => failwith("Not implemented"))
   let parserRef = ref(parser)
 
-  (Parser(input => run(parserRef.contents, input)), parserRef)
+  (Parser(input => runOnInput(parserRef.contents, input)), parserRef)
 }
 
 let makeRecursive: makeRecursive<'t> = fn => {
