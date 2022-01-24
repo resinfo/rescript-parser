@@ -60,8 +60,8 @@ let parser: parser =
 type result = result<(expression, string), string>
 let result: result = P.run(parser, " 1 +  4  ")
 
-// Result is a tuple of a valid AST and zero input left to parse.
-result == Ok(Expression(SingleDigit(1), Plus, SingleDigit(4)), "")
+// Result is a tuple of a valid AST and the state object.
+result == Ok(Expression(SingleDigit(1), Plus, SingleDigit(4)), _)
 
 ```
 
