@@ -2,6 +2,7 @@
 'use strict';
 
 var Ava = require("rescript-ava/src/ava.cjs");
+var Test_runners = require("../test_runners.cjs");
 var Simple_sexp_parser = require("./simple_sexp_parser.cjs");
 
 Ava.test("[Sexps] Char list to string", (function (t) {
@@ -22,6 +23,315 @@ Ava.test("[Sexps] Char list to string", (function (t) {
                         }
                       }), "hello", undefined, undefined);
       }));
+
+Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
+        return "[Sexps.Simple] String \"" + param$1[0] + "\"";
+      }), [
+      [
+        "\"\"",
+        {
+          TAG: /* String */1,
+          _0: ""
+        },
+        ""
+      ],
+      [
+        "\"hello\"",
+        {
+          TAG: /* String */1,
+          _0: "hello"
+        },
+        ""
+      ],
+      [
+        "    \"  he ll   o  \"",
+        {
+          TAG: /* String */1,
+          _0: "  he ll   o  "
+        },
+        ""
+      ]
+    ]);
+
+Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
+        return "[Sexps.Simple] Int \"" + param$1[0] + "\"";
+      }), [
+      [
+        "1",
+        {
+          TAG: /* Int */0,
+          _0: "1"
+        },
+        ""
+      ],
+      [
+        "    4",
+        {
+          TAG: /* Int */0,
+          _0: "4"
+        },
+        ""
+      ],
+      [
+        "192",
+        {
+          TAG: /* Int */0,
+          _0: "192"
+        },
+        ""
+      ],
+      [
+        "  8671109    ",
+        {
+          TAG: /* Int */0,
+          _0: "8671109"
+        },
+        ""
+      ],
+      [
+        "-991344",
+        {
+          TAG: /* Int */0,
+          _0: "-991344"
+        },
+        ""
+      ],
+      [
+        "    -9     ",
+        {
+          TAG: /* Int */0,
+          _0: "-9"
+        },
+        ""
+      ]
+    ]);
+
+Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
+        return "[Sexps.Simple] Exp \"" + param$1[0] + "\"";
+      }), [
+      [
+        "()",
+        {
+          TAG: /* Exp */2,
+          _0: /* [] */0
+        },
+        ""
+      ],
+      [
+        "( )",
+        {
+          TAG: /* Exp */2,
+          _0: /* [] */0
+        },
+        ""
+      ],
+      [
+        "(1)",
+        {
+          TAG: /* Exp */2,
+          _0: {
+            hd: {
+              TAG: /* Int */0,
+              _0: "1"
+            },
+            tl: /* [] */0
+          }
+        },
+        ""
+      ],
+      [
+        " (       1 )\n\n  ",
+        {
+          TAG: /* Exp */2,
+          _0: {
+            hd: {
+              TAG: /* Int */0,
+              _0: "1"
+            },
+            tl: /* [] */0
+          }
+        },
+        ""
+      ],
+      [
+        "(1 \"2\" 3)",
+        {
+          TAG: /* Exp */2,
+          _0: {
+            hd: {
+              TAG: /* Int */0,
+              _0: "1"
+            },
+            tl: {
+              hd: {
+                TAG: /* String */1,
+                _0: "2"
+              },
+              tl: {
+                hd: {
+                  TAG: /* Int */0,
+                  _0: "3"
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        },
+        ""
+      ],
+      [
+        "    (  1  \"2\"     3  )  ",
+        {
+          TAG: /* Exp */2,
+          _0: {
+            hd: {
+              TAG: /* Int */0,
+              _0: "1"
+            },
+            tl: {
+              hd: {
+                TAG: /* String */1,
+                _0: "2"
+              },
+              tl: {
+                hd: {
+                  TAG: /* Int */0,
+                  _0: "3"
+                },
+                tl: /* [] */0
+              }
+            }
+          }
+        },
+        ""
+      ],
+      [
+        "(1 (\"2\" 3))",
+        {
+          TAG: /* Exp */2,
+          _0: {
+            hd: {
+              TAG: /* Int */0,
+              _0: "1"
+            },
+            tl: {
+              hd: {
+                TAG: /* Exp */2,
+                _0: {
+                  hd: {
+                    TAG: /* String */1,
+                    _0: "2"
+                  },
+                  tl: {
+                    hd: {
+                      TAG: /* Int */0,
+                      _0: "3"
+                    },
+                    tl: /* [] */0
+                  }
+                }
+              },
+              tl: /* [] */0
+            }
+          }
+        },
+        ""
+      ],
+      [
+        "\n  (     1(\"2\"3) )       ",
+        {
+          TAG: /* Exp */2,
+          _0: {
+            hd: {
+              TAG: /* Int */0,
+              _0: "1"
+            },
+            tl: {
+              hd: {
+                TAG: /* Exp */2,
+                _0: {
+                  hd: {
+                    TAG: /* String */1,
+                    _0: "2"
+                  },
+                  tl: {
+                    hd: {
+                      TAG: /* Int */0,
+                      _0: "3"
+                    },
+                    tl: /* [] */0
+                  }
+                }
+              },
+              tl: /* [] */0
+            }
+          }
+        },
+        ""
+      ],
+      [
+        "\n  (     1(\"2\"(3 (1 (())))) )       ",
+        {
+          TAG: /* Exp */2,
+          _0: {
+            hd: {
+              TAG: /* Int */0,
+              _0: "1"
+            },
+            tl: {
+              hd: {
+                TAG: /* Exp */2,
+                _0: {
+                  hd: {
+                    TAG: /* String */1,
+                    _0: "2"
+                  },
+                  tl: {
+                    hd: {
+                      TAG: /* Exp */2,
+                      _0: {
+                        hd: {
+                          TAG: /* Int */0,
+                          _0: "3"
+                        },
+                        tl: {
+                          hd: {
+                            TAG: /* Exp */2,
+                            _0: {
+                              hd: {
+                                TAG: /* Int */0,
+                                _0: "1"
+                              },
+                              tl: {
+                                hd: {
+                                  TAG: /* Exp */2,
+                                  _0: {
+                                    hd: {
+                                      TAG: /* Exp */2,
+                                      _0: /* [] */0
+                                    },
+                                    tl: /* [] */0
+                                  }
+                                },
+                                tl: /* [] */0
+                              }
+                            }
+                          },
+                          tl: /* [] */0
+                        }
+                      }
+                    },
+                    tl: /* [] */0
+                  }
+                }
+              },
+              tl: /* [] */0
+            }
+          }
+        },
+        ""
+      ]
+    ]);
 
 var P;
 

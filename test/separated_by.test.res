@@ -1,156 +1,88 @@
-open Ava
-
 module P = Res_parser
 
-skip("Separated by simple", _t => {
-  ()
-})
+Test_runners.runTests(
+  ~parser={
+    P.char('a')
+    ->P.separatedBy1(P.char(','))
+    ->P.map(Belt.List.map(_, Json.charToString))
+    ->P.map(Json.concatStringList)
+  },
+  ~makeName=(_, (input, expected, _)) => `[Separated by] Simple "${input} == ${expected}"`,
+  ~specs=[
+    ("a,a", "aa", ""),
+    ("a,,a", "a", ",,a"),
+    ("a,a,a,a", "aaaa", ""),
+    ("a", "a", ""),
+    ("a,b,c", "a", ",b,c"),
+  ],
+)
 
-// test("Separated by simple", t => {
-//   let parser =
-//     P.char('a')
-//     ->P.separatedBy1(P.char(','))
-//     ->P.map(Belt.List.map(_, Json.charToString))
-//     ->P.map(Json.concatStringList)
+Test_runners.runTests(
+  ~parser={
+    let manyWhitespace = P.many(P.char(' '))
+    let commaWithWhitespace = P.char(',')->P.between(manyWhitespace, manyWhitespace)
 
-//   let run = P.run(parser)
+    P.char('a')->P.separatedBy1(commaWithWhitespace)
+  },
+  ~makeName=(_, (input, _, _)) => `[Separated by] semi-simple "${input}"`,
+  ~specs=[
+    //
+    ("a, a,a,   a    ,a", list{'a', 'a', 'a', 'a', 'a'}, ""),
+    ("a", list{'a'}, ""),
+  ],
+)
 
-//   switch run("a,a") {
-//   | Ok("aa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
+Test_runners.runTests(
+  ~parser={
+    P.char('a')
+    ->P.separatedBy(P.char(','))
+    ->P.map(Belt.List.map(_, Json.charToString))
+    ->P.map(Json.concatStringList)
+  },
+  ~makeName=(_, (input, _, _)) => `[Separated by many] simple "${input}"`,
+  ~specs=[
+    //
+    ("a,a", "aa", ""),
+    ("a,a,a,a", "aaaa", ""),
+    ("a", "a", ""),
+    ("a,b,c", "a", ",b,c"),
+  ],
+)
 
-//   switch run("a,,a") {
-//   | Ok("a", ",,a") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
+Test_runners.runTests(
+  //
+  ~parser={
+    let atLeastOneComma = P.atLeastOne(P.char(','))
 
-//   switch run("a,a,a,a") {
-//   | Ok("aaaa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
+    P.char('a')
+    ->P.separatedBy(atLeastOneComma)
+    ->P.map(Belt.List.map(_, Json.charToString))
+    ->P.map(Json.concatStringList)
+  },
+  ~makeName=(_, (input, _, _)) => `[Separated by] at least one "${input}"`,
+  ~specs=[
+    //
+    ("a,,,a", "aa", ""),
+    ("a,,,,,a,,a,a,,,a", "aaaaa", ""),
+  ],
+)
 
-//   switch run("a") {
-//   | Ok("a", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
+Test_runners.runTests(
+  ~parser={
+    let commaSeparatedByWhitespace = {
+      Json.manyWhitespace->P.andThen(P.char(','))->P.andThen(Json.manyWhitespace)
+    }
 
-//   switch run("a,b,c") {
-//   | Ok("a", ",b,c") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
-
-//   let manyWhitespace = P.many(P.char(' '))
-//   let commaWithWhitespace = P.char(',')->P.between(manyWhitespace, manyWhitespace)
-//   let parser = P.char('a')->P.separatedBy1(commaWithWhitespace)
-
-//   let run = P.run(parser)
-
-//   switch run("a, a,a,   a    ,a") {
-//   | Ok(list{'a', 'a', 'a', 'a', 'a'}, "") => t->pass()
-//   | Ok(_, rest) => t->fail(~message=`Shouldn't succeed with "${rest}" remaining`, ())
-//   | Error(err) => t->fail(~message=`Shouldn't fail with "${err}"`, ())
-//   }
-
-//   switch run("a") {
-//   | Ok(list{'a'}, "") => t->pass()
-//   | Ok(_, rest) => t->fail(~message=`Shouldn't succeed with "${rest}" remaining`, ())
-//   | Error(err) => t->fail(~message=`Shouldn't fail with "${err}"`, ())
-//   }
-
-//   switch run("") {
-//   | Ok(_, rest) => t->fail(~message=`Shouldn't succeed with "${rest}" remaining`, ())
-//   | Error(err) => t->pass(~message=`Shouldn't fail with "${err}"`, ())
-//   }
-// })
-
-// test("Separated by many simple", t => {
-//   let parser =
-//     P.char('a')
-//     ->P.separatedBy(P.char(','))
-//     ->P.map(Belt.List.map(_, Json.charToString))
-//     ->P.map(Json.concatStringList)
-
-//   let run = P.run(parser)
-
-//   switch run("a,a") {
-//   | Ok("aa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
-
-//   switch run("a,a,a,a") {
-//   | Ok("aaaa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
-
-//   switch run("a") {
-//   | Ok("a", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
-
-//   switch run("a,b,c") {
-//   | Ok("a", ",b,c") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
-// })
-
-// test("Separated by at least one", t => {
-//   let atLeastOneComma = P.atLeastOne(P.char(','))
-//   let parser =
-//     P.char('a')
-//     ->P.separatedBy(atLeastOneComma)
-//     ->P.map(Belt.List.map(_, Json.charToString))
-//     ->P.map(Json.concatStringList)
-
-//   let run = P.run(parser)
-
-//   switch run("a,,,a") {
-//   | Ok("aa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
-
-//   switch run("a,,,,,a,,a,a,,,a") {
-//   | Ok("aaaaa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail()
-//   }
-
-//   let commaSeparatedByWhitespace = {
-//     Json.manyWhitespace->P.andThen(P.char(','))->P.andThen(Json.manyWhitespace)
-//   }
-//   let parser =
-//     P.char('a')
-//     ->P.separatedBy(commaSeparatedByWhitespace)
-//     ->P.map(Belt.List.map(_, Json.charToString))
-//     ->P.map(Json.concatStringList)
-
-//   let run = P.run(parser)
-
-//   switch run("a, a") {
-//   | Ok("aa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail(~message="Should not fail", ())
-//   }
-
-//   switch run("a      ,a") {
-//   | Ok("aa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail(~message="Should not fail", ())
-//   }
-
-//   switch run("a      ,a,a,a      ,a") {
-//   | Ok("aaaaa", "") => t->pass()
-//   | Ok(_, remaining) => t->fail(~message=`Should not pass with "${remaining}" remaining`, ())
-//   | Error(_) => t->fail(~message="Should not fail", ())
-//   }
-// })
+    P.char('a')
+    ->P.separatedBy(commaSeparatedByWhitespace)
+    ->P.map(Belt.List.map(_, Json.charToString))
+    ->P.map(Json.concatStringList)
+  },
+  ~makeName=(_, (input, _, _)) => `[Separated by ++] at least one "${input}"`,
+  ~specs=[
+    //
+    ("a, a", "aa", ""),
+    ("a      ,a", "aa", ""),
+    ("a      ,a,a,a      ,a", "aaaaa", ""),
+  ],
+)
