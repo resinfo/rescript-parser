@@ -63,29 +63,9 @@ Ava.test("[Example.test] error", (function (t) {
         var error = Res_parser.run(parser, "\n  \n  \n  \n  \n  \n  \n  1\n  \n  \n  ++ e");
         if (error.TAG === /* Ok */0) {
           return Ava.fail(t, "Shouldn't succeed", undefined);
+        } else {
+          return Ava.pass(t, error._0.message, undefined);
         }
-        var error$1 = error._0;
-        var state = error$1.state;
-        var position = state.position;
-        var line = position.line;
-        var index = position.index;
-        var col = position.col;
-        var lineStart = position.lineStart;
-        var lineFrame = state.input.slice(lineStart, index + 10 | 0);
-        var padding = " ┆";
-        var loop = function (lst) {
-          if (!lst) {
-            return "";
-          }
-          var match = lst.hd;
-          var separator = String(match[0]) + padding;
-          return loop(lst.tl) + "\n" + (separator + match[1]);
-        };
-        var codeFrames = loop(Res_parser.State.makeFrames(error$1.state));
-        var separator = String(line) + padding;
-        var errorMessage = codeFrames + "\n" + separator + lineFrame + "\n" + " ".repeat((col + separator.length | 0) - 1 | 0) + "^ " + error$1.message;
-        console.log(errorMessage);
-        return Ava.pass(t, error$1.message, undefined);
       }));
 
 var P;

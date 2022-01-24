@@ -70,49 +70,7 @@ test("[Example.test] error", t => {
   
   ++ e`,
   ) {
-  | Error(error) => {
-      let {state} = error
-      let {input, position} = state
-      let line = position.line
-      let index = position.index
-      let col = position.col
-      let lineStart = position.lineStart
-
-      let lineFrame = Js.String.slice(input, ~from=lineStart, ~to_=index + 10)
-
-      let padding = ` ┆`
-
-      let codeFrames = {
-        let rec loop = lst => {
-          switch lst {
-          | list{} => ""
-          | list{(line, head), ...rest} =>
-            loop(rest) ++
-            "\n" ++ {
-              let separator = string_of_int(line) ++ padding
-
-              separator ++ head
-            }
-          }
-        }
-
-        P.State.makeFrames(error.state)->loop
-      }
-
-      let separator = string_of_int(line) ++ padding
-      let errorMessage =
-        codeFrames ++
-        "\n" ++
-        separator ++
-        lineFrame ++
-        "\n" ++
-        Js.String.repeat(col + Js.String.length(separator) - 1, " ") ++
-        "^ " ++
-        error.message
-
-      Js.log(errorMessage)
-      t->pass(~message=error.message, ())
-    }
+  | Error(error) => t->pass(~message=error.message, ())
   | Ok(_) => t->fail(~message=`Shouldn't succeed`, ())
   }
 })
