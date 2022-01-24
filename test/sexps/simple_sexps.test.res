@@ -8,7 +8,7 @@ Ava.test("[Sexps] Char list to string", t => {
 
 Test_runners.runTests(
   ~parser=Simple.parser,
-  ~makeName=(_, (input, _, _)) => `[Sexps.Simple] String "${input}"`,
+  ~makeName=(input, _) => `[Sexps.Simple] String "${input}"`,
   ~specs=[
     (`""`, Simple.String(""), ""),
     (`"hello"`, String("hello"), ""),
@@ -18,7 +18,7 @@ Test_runners.runTests(
 
 Test_runners.runTests(
   ~parser=Simple.parser,
-  ~makeName=(_, (input, _, _)) => `[Sexps.Simple] Int "${input}"`,
+  ~makeName=(input, _) => `[Sexps.Simple] Int "${input}"`,
   ~specs=[
     (`1`, Simple.Int("1"), ""),
     (`    4`, Int("4"), ""),
@@ -30,7 +30,7 @@ Test_runners.runTests(
 )
 
 Test_runners.runTests(
-  ~makeName=(_, (input, _, _)) => `[Sexps.Simple] Exp "${input}"`,
+  ~makeName=(input, _) => `[Sexps.Simple] Exp "${input}"`,
   ~parser=Simple.parser,
   ~specs=[
     (`()`, Simple.Exp(list{}), ""),

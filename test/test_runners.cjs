@@ -8,11 +8,17 @@ var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Res_parser = require("../src/res_parser.cjs");
 
 function makeTests(parser, makeName, specs) {
-  return Belt_Array.mapWithIndex(specs, (function (index, spec) {
+  return Belt_Array.map(specs, (function (param) {
+                var b = param[1];
+                var a = param[0];
                 return [
                         parser,
-                        Curry._2(makeName, index, spec),
-                        spec
+                        Curry._2(makeName, a, b),
+                        [
+                          a,
+                          b,
+                          param[2]
+                        ]
                       ];
               }));
 }
@@ -25,7 +31,7 @@ function runTests(parser, makeName, specs) {
                 var expected = match[1];
                 var input = match[0];
                 var parser = param[0];
-                return Ava.test(param[1], (function (t) {
+                return Ava.test("[Success] " + param[1], (function (t) {
                               var err = Res_parser.run(parser, input);
                               if (err.TAG !== /* Ok */0) {
                                 return Ava.fail(t, "Should not fail with \"" + err._0.message + "\"", undefined);
@@ -37,9 +43,34 @@ function runTests(parser, makeName, specs) {
               }));
 }
 
+function runFailureTests(parser, makeName, specs) {
+  var tests = makeTests(parser, (function (a, param) {
+          return Curry._1(makeName, a);
+        }), Belt_Array.map(specs, (function (x) {
+              return [
+                      x,
+                      "",
+                      ""
+                    ];
+            })));
+  return Belt_Array.forEach(tests, (function (param) {
+                var input = param[2][0];
+                var parser = param[0];
+                return Ava.test("[Failure] " + param[1], (function (t) {
+                              var err = Res_parser.run(parser, input);
+                              if (err.TAG === /* Ok */0) {
+                                return Ava.fail(t, "Should not succeed with \"" + Res_parser.State.remaining(err._0[1]) + "\" remaining", undefined);
+                              } else {
+                                return Ava.pass(t, "Should fail with \"" + err._0.message + "\"", undefined);
+                              }
+                            }));
+              }));
+}
+
 var P;
 
 exports.P = P;
 exports.makeTests = makeTests;
 exports.runTests = runTests;
+exports.runFailureTests = runFailureTests;
 /* Ava Not a pure module */

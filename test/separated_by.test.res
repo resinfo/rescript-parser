@@ -7,7 +7,7 @@ Test_runners.runTests(
     ->P.map(Belt.List.map(_, Json.charToString))
     ->P.map(Json.concatStringList)
   },
-  ~makeName=(_, (input, expected, _)) => `[Separated by] Simple "${input} == ${expected}"`,
+  ~makeName=(input, expected) => `[Separated by] Simple "${input} == ${expected}"`,
   ~specs=[
     ("a,a", "aa", ""),
     ("a,,a", "a", ",,a"),
@@ -24,7 +24,7 @@ Test_runners.runTests(
 
     P.char('a')->P.separatedBy1(commaWithWhitespace)
   },
-  ~makeName=(_, (input, _, _)) => `[Separated by] semi-simple "${input}"`,
+  ~makeName=(input, _) => `[Separated by] semi-simple "${input}"`,
   ~specs=[
     //
     ("a, a,a,   a    ,a", list{'a', 'a', 'a', 'a', 'a'}, ""),
@@ -39,7 +39,7 @@ Test_runners.runTests(
     ->P.map(Belt.List.map(_, Json.charToString))
     ->P.map(Json.concatStringList)
   },
-  ~makeName=(_, (input, _, _)) => `[Separated by many] simple "${input}"`,
+  ~makeName=(input, _) => `[Separated by many] simple "${input}"`,
   ~specs=[
     //
     ("a,a", "aa", ""),
@@ -59,7 +59,7 @@ Test_runners.runTests(
     ->P.map(Belt.List.map(_, Json.charToString))
     ->P.map(Json.concatStringList)
   },
-  ~makeName=(_, (input, _, _)) => `[Separated by] at least one "${input}"`,
+  ~makeName=(input, _) => `[Separated by] at least one "${input}"`,
   ~specs=[
     //
     ("a,,,a", "aa", ""),
@@ -78,7 +78,7 @@ Test_runners.runTests(
     ->P.map(Belt.List.map(_, Json.charToString))
     ->P.map(Json.concatStringList)
   },
-  ~makeName=(_, (input, _, _)) => `[Separated by ++] at least one "${input}"`,
+  ~makeName=(input, _) => `[Separated by ++] at least one "${input}"`,
   ~specs=[
     //
     ("a, a", "aa", ""),

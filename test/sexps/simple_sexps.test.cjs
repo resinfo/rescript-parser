@@ -24,8 +24,8 @@ Ava.test("[Sexps] Char list to string", (function (t) {
                       }), "hello", undefined, undefined);
       }));
 
-Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
-        return "[Sexps.Simple] String \"" + param$1[0] + "\"";
+Test_runners.runTests(Simple_sexp_parser.parser, (function (input, param) {
+        return "[Sexps.Simple] String \"" + input + "\"";
       }), [
       [
         "\"\"",
@@ -53,8 +53,8 @@ Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
       ]
     ]);
 
-Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
-        return "[Sexps.Simple] Int \"" + param$1[0] + "\"";
+Test_runners.runTests(Simple_sexp_parser.parser, (function (input, param) {
+        return "[Sexps.Simple] Int \"" + input + "\"";
       }), [
       [
         "1",
@@ -106,8 +106,8 @@ Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
       ]
     ]);
 
-Test_runners.runTests(Simple_sexp_parser.parser, (function (param, param$1) {
-        return "[Sexps.Simple] Exp \"" + param$1[0] + "\"";
+Test_runners.runTests(Simple_sexp_parser.parser, (function (input, param) {
+        return "[Sexps.Simple] Exp \"" + input + "\"";
       }), [
       [
         "()",
