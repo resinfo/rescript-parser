@@ -159,7 +159,6 @@ let satisfy: satisfy = predicate => Parser(
     | Some(char) if predicate(char) => Ok((char, State.next(input)))
     | Some(char) =>
       Error({
-        // `Unexpected "` ++ Char.escaped(char) ++ `".\n` ++ input->Js.String2.slice(~from=0, ~to_=30),
         message: `Unexpected "` ++ Char.escaped(char) ++ `".\n`,
         state: input,
       })
