@@ -4,21 +4,161 @@
 var Char = require("rescript/lib/js/char.js");
 var List = require("rescript/lib/js/list.js");
 var Curry = require("rescript/lib/js/curry.js");
-var $$String = require("rescript/lib/js/string.js");
 var Belt_List = require("rescript/lib/js/belt_List.js");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Pervasives = require("rescript/lib/js/pervasives.js");
+var Belt_Option = require("rescript/lib/js/belt_Option.js");
 var Caml_option = require("rescript/lib/js/caml_option.js");
 var Caml_string = require("rescript/lib/js/caml_string.js");
 
-function run(t, input) {
+function make(param) {
+  return {
+          prevLines: /* [] */0,
+          index: 0,
+          lineStart: 0,
+          line: 1,
+          col: 1
+        };
+}
+
+function newline(t) {
+  return {
+          prevLines: {
+            hd: [
+              t.lineStart,
+              t.index
+            ],
+            tl: t.prevLines
+          },
+          index: t.index + 1 | 0,
+          lineStart: t.index + 1 | 0,
+          line: t.line + 1 | 0,
+          col: 1
+        };
+}
+
+function next(t) {
+  return {
+          prevLines: t.prevLines,
+          index: t.index + 1 | 0,
+          lineStart: t.lineStart,
+          line: t.line,
+          col: t.col + 1 | 0
+        };
+}
+
+var Position = {
+  make: make,
+  newline: newline,
+  next: next
+};
+
+function getChar(t) {
+  try {
+    return Caml_string.get(t.input, t.position.index);
+  }
+  catch (exn){
+    return ;
+  }
+}
+
+function next$1(t) {
+  var match = getChar(t);
+  if (match !== undefined) {
+    if (match !== 10 && match !== 13) {
+      return {
+              position: next(t.position),
+              input: t.input
+            };
+    } else {
+      return {
+              position: newline(t.position),
+              input: t.input
+            };
+    }
+  } else {
+    return t;
+  }
+}
+
+function getPosition(t) {
+  return t.position;
+}
+
+function fromString(input) {
+  return {
+          position: {
+            prevLines: /* [] */0,
+            index: 0,
+            lineStart: 0,
+            line: 1,
+            col: 1
+          },
+          input: input
+        };
+}
+
+function remaining(t) {
+  return t.input.slice(t.position.index);
+}
+
+function makeFrames(state) {
+  var input = state.input;
+  var position = state.position;
+  var line = position.line;
+  var prevLines = position.prevLines;
+  var size = Math.min(4, Belt_List.size(prevLines));
+  var lines = Belt_List.take(prevLines, size);
+  return Belt_List.mapWithIndex(Belt_Option.getWithDefault(lines, /* [] */0), (function (index, param) {
+                var lineNumber = (line - index | 0) - 1 | 0;
+                return [
+                        lineNumber,
+                        input.slice(param[0], param[1])
+                      ];
+              }));
+}
+
+var State = {
+  getChar: getChar,
+  next: next$1,
+  getPosition: getPosition,
+  fromString: fromString,
+  remaining: remaining,
+  makeFrames: makeFrames
+};
+
+function fromInput(state, message) {
+  return {
+          message: message,
+          state: state
+        };
+}
+
+var $$Error = {
+  fromInput: fromInput
+};
+
+function runOnInput(t, input) {
   return Curry._1(t._0, input);
+}
+
+function run(t, inputString) {
+  return runOnInput(t, {
+              position: {
+                prevLines: /* [] */0,
+                index: 0,
+                lineStart: 0,
+                line: 1,
+                col: 1
+              },
+              input: inputString
+            });
 }
 
 function bind(t, fn) {
   return /* Parser */{
           _0: (function (input) {
-              var msg = run(t, input);
+              var msg = runOnInput(t, input);
               if (msg.TAG !== /* Ok */0) {
                 return {
                         TAG: /* Error */1,
@@ -26,7 +166,7 @@ function bind(t, fn) {
                       };
               }
               var match = msg._0;
-              return run(Curry._1(fn, match[0]), match[1]);
+              return runOnInput(Curry._1(fn, match[0]), match[1]);
             })
         };
 }
@@ -65,32 +205,32 @@ function andThen(p1, p2) {
 function satisfy(predicate) {
   return /* Parser */{
           _0: (function (input) {
-              var $$char;
-              try {
-                $$char = Caml_string.get(input, 0);
-              }
-              catch (exn){
-                $$char = undefined;
-              }
+              var $$char = getChar(input);
               if ($$char !== undefined) {
                 if (Curry._1(predicate, $$char)) {
                   return {
                           TAG: /* Ok */0,
                           _0: [
                             $$char,
-                            $$String.sub(input, 1, input.length - 1 | 0)
+                            next$1(input)
                           ]
                         };
                 } else {
                   return {
                           TAG: /* Error */1,
-                          _0: "Unexpected " + Char.escaped($$char) + ".\n" + input.slice(0, 30)
+                          _0: {
+                            message: "Unexpected \"" + Char.escaped($$char) + "\".\n",
+                            state: input
+                          }
                         };
                 }
               } else {
                 return {
                         TAG: /* Error */1,
-                        _0: "No more input"
+                        _0: {
+                          message: "No more input",
+                          state: input
+                        }
                       };
               }
             })
@@ -106,11 +246,11 @@ function $$char(expected) {
 function orElse(parser1, parser2) {
   return /* Parser */{
           _0: (function (input) {
-              var result = run(parser1, input);
+              var result = runOnInput(parser1, input);
               if (result.TAG === /* Ok */0) {
                 return result;
               } else {
-                return run(parser2, input);
+                return runOnInput(parser2, input);
               }
             })
         };
@@ -118,10 +258,13 @@ function orElse(parser1, parser2) {
 
 function choice(parsers) {
   return Belt_Array.reduce(parsers, /* Parser */{
-              _0: (function (param) {
+              _0: (function (input) {
                   return {
                           TAG: /* Error */1,
-                          _0: "Initial parser"
+                          _0: {
+                            message: "Initial parser",
+                            state: input
+                          }
                         };
                 })
             }, orElse);
@@ -162,7 +305,7 @@ function sequence(parsers) {
 }
 
 function zeroOrMore(parser, input) {
-  var match = run(parser, input);
+  var match = runOnInput(parser, input);
   if (match.TAG !== /* Ok */0) {
     return [
             /* [] */0,
@@ -264,7 +407,7 @@ function makeForwardRef(param) {
   return [
           /* Parser */{
             _0: (function (input) {
-                return run(parserRef.contents, input);
+                return runOnInput(parserRef.contents, input);
               })
           },
           parserRef
@@ -296,6 +439,10 @@ function optional(parser) {
   return orElse(some, none);
 }
 
+exports.Position = Position;
+exports.State = State;
+exports.$$Error = $$Error;
+exports.runOnInput = runOnInput;
 exports.run = run;
 exports.bind = bind;
 exports.$$return = $$return;

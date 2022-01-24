@@ -1,6 +1,6 @@
 {
   "name": "@resinfo/parser",
-  "version": "1.0.0",
+  "version": "2.0.0-alpha",
   "sources": [{
     "dir": "src",
     "subdirs": true

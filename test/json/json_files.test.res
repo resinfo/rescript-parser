@@ -19,9 +19,8 @@ let partials = readFiles("partials")
 passes->forEach(((name, file)) => {
   test(`[JSON] File "${name}" success`, t => {
     switch run(file) {
-    | Ok(_, "") => t->pass(~message=`Should succeed`, ())
-    | Ok(_, rest) => t->fail(~message=`Shouldn't partially succeed with "${rest}" remaining`, ())
-    | Error(msg) => t->fail(~message=`Shouldn't fail with "${msg}"`, ())
+    | Ok(_, state) => t->true_(state->P.State.remaining == "", ())
+    | Error(err) => t->fail(~message=`Should not fail with "${err.message}"`, ())
     }
   })
 })
@@ -29,9 +28,13 @@ passes->forEach(((name, file)) => {
 partials->forEach(((name, file)) => {
   test(`[JSON] File "${name}" partial success`, t => {
     switch run(file) {
-    | Ok(_, "") => t->fail(~message=`Shouldn't succeed`, ())
-    | Ok(_, rest) => t->pass(~message=`Should partially succeed with "${rest}" remaining`, ())
-    | Error(msg) => t->fail(~message=`Shouldn't fail with "${msg}"`, ())
+    | Ok(_, state) =>
+      t->true_(
+        state->P.State.remaining != "",
+        ~message=`Should partially succeed with "${state->P.State.remaining}" remaining`,
+        (),
+      )
+    | Error(err) => t->fail(~message=`Should not fail with "${err.message}"`, ())
     }
   })
 })
@@ -39,9 +42,12 @@ partials->forEach(((name, file)) => {
 failures->forEach(((name, file)) => {
   test(`[JSON] File "${name}" failure`, t => {
     switch run(file) {
-    | Ok(ast, rest) =>
-      t->fail(~message=`Shouldn't succeed with "${ast->Json.toString}" and "${rest}" remaining`, ())
-    | Error(msg) => t->pass(~message=`Should fail with "${msg}"`, ())
+    | Ok(ast, state) =>
+      t->fail(
+        ~message=`Shouldn't succeed with "${ast->Json.toString}" and "${state->P.State.remaining}" remaining`,
+        (),
+      )
+    | Error(err) => t->pass(~message=`Should fail with "${err.message}"`, ())
     }
   })
 })

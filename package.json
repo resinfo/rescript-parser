@@ -1,6 +1,6 @@
 {
   "name": "@resinfo/parser",
-  "version": "1.0.0-alpha",
+  "version": "2.0.0-alpha",
   "main": "index.js",
   "private": false,
   "repository": "https://github.com/resinfo/rescript-parser.git",
@@ -25,6 +25,7 @@
   },
   "scripts": {
     "make": "rescript build -with-deps",
+    "dev": "rescript build -w",
     "test": "ava",
     "test:watch": "ava --watch"
   },

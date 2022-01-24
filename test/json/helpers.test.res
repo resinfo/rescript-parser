@@ -4,246 +4,143 @@ module P = Res_parser
 
 let run = P.run(Json.digit)
 
-let shouldNotPass = ((_, remaining)) => `Should not pass with "${remaining}" remaining`
+let remaining = P.State.remaining
+let shouldNotPass = ((_, s)) => `Should not pass with "${remaining(s)}" remaining`
 
 let shouldNotFail = "Should not fail"
 
 test("Digit succeeds", t => {
   Belt.Range.forEach(0, 9, index => {
     let asString = index->string_of_int
-    let result = run(asString)
 
-    switch result {
-    | Ok((output, "")) => t->true_(output == asString, ())
-    | Ok((_, remaining)) =>
+    switch run(asString) {
+    | Ok((output, state)) if P.State.remaining(state) == "" => t->true_(output == asString, ())
+    | Ok((_, {input: remaining})) =>
       t->fail(~message=`Parsing digit had remaining characters: "${remaining}"`, ())
-    | Error(error) => t->fail(~message=`Failure to parse digit: ${error}`, ())
+    | Error(error) => t->fail(~message=`Failure to parse digit: "${error.message}"`, ())
     }
   })
 })
 
-test("Digit partially succeeds", t => {
-  let result = run("10")
+Test_runners.runTests(
+  //
+  ~parser=Json.digit,
+  ~makeName=(input, _) => `[JSON Digit] Run with "${input}"`,
+  ~specs=[("10", "1", "0"), ("1hello", "1", "hello")],
+)
 
-  switch result {
-  | Ok("1", "0") => t->pass(~message="Should be a digit with a char remaining", ())
-  | _ => t->fail()
-  }
+Test_runners.runFailureTests(
+  //
+  ~parser=Json.digit,
+  ~makeName=input => `[JSON Digit] Fail with "${input}"`,
+  ~specs=["hello"],
+)
 
-  let result = run("1hello")
-
-  switch result {
-  | Ok("1", "hello") => t->pass(~message="Should be a digit with a char remaining", ())
-  | _ => t->fail()
-  }
-})
-
-test("Digit fails", t => {
-  let result = run("hello")
-
-  switch result {
-  | Ok(_) => t->fail(~message="Should fail outright", ())
-  | Error(error) => t->pass(~message=`Fails to parse, reason: "${error}"`, ())
-  }
-})
-
-let run = P.run(Json.digits)
-
-test("Digits succeeds", t => {
-  let result = run("1")
-
-  switch result {
-  | Ok("1", "") => t->pass()
-  | Ok(_, remaining) => t->fail(~message=`Passed with "${remaining}" remaining`, ())
-  | Error(_) => t->fail()
-  }
-
-  let result = run("123")
-
-  switch result {
-  | Ok("123", "") => t->pass()
-  | Ok(_, remaining) => t->fail(~message=`Passed with "${remaining}" remaining`, ())
-  | Error(_) => t->fail()
-  }
-
-  let result = run("123asdf")
-
-  switch result {
-  | Ok("123", "asdf") => t->pass()
-  | Ok(_, remaining) => t->fail(~message=`Passed with "${remaining}" remaining`, ())
-  | Error(_) => t->fail()
-  }
-})
+Test_runners.runTests(
+  ~parser=Json.digits,
+  ~makeName=(input, _) => `[JSON digit] Run with "${input}"`,
+  ~specs=[
+    //
+    ("1", "1", ""),
+    ("123", "123", ""),
+    ("123asdf", "123", "asdf"),
+  ],
+)
 
 test("Digits fails", t => {
-  let result = run(" 123")
-
-  switch result {
+  switch run(" 123") {
   | Ok(_, _) => t->fail()
   | Error(_) => t->pass()
   }
 
-  let result = run("not even close")
-
-  switch result {
+  switch run("not even close") {
   | Ok(_, _) => t->fail()
   | Error(_) => t->pass()
   }
 })
 
-let run = P.run(Json.exponent)
+Test_runners.runTests(
+  ~parser=Json.exponent,
+  ~makeName=(input, _) => `[Exponent] "${input}"`,
+  ~specs=[
+    ("e-1234", "e-1234", ""),
+    ("E-1234", "E-1234", ""),
+    ("e1234", "e1234", ""),
+    ("E1234", "E1234", ""),
+    ("e0", "e0", ""),
+    ("E0", "E0", ""),
+  ],
+)
 
-test("Exponent succeeds", t => {
-  switch run("e-1234") {
-  | Ok("e-1234", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
+Test_runners.runTests(
+  ~parser=Json.exponent,
+  ~makeName=(input, _) => `[Exponent Partial] "${input}"`,
+  ~specs=[
+    //
+    ("e-1234hello", "e-1234", "hello"),
+    ("e-1234  1", "e-1234", "  1"),
+  ],
+)
 
-  switch run("E-1234") {
-  | Ok("E-1234", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("e1234") {
-  | Ok("e1234", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("E1234") {
-  | Ok("E1234", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("e0") {
-  | Ok("e0", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("E0") {
-  | Ok("E0", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-})
-
-test("Exponent partially succeeds", t => {
-  switch run("e-1234hello") {
-  | Ok("e-1234", "hello") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("e-1234  1") {
-  | Ok("e-1234", "  1") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-})
-
-test("Exponent fails", t => {
-  switch run("  E0") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-
-  switch run("e--1") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-
-  switch run("e-") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-
-  switch run("ye ") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-})
+Test_runners.runFailureTests(
+  ~makeName=input => `[Exponent fails] "${input}"`,
+  ~parser=Json.exponent,
+  ~specs=["  E0", "e--1", "e-", "ye "],
+)
 
 let run = P.run(Json.fraction)
 
-test("Fraction succeeds", t => {
-  switch run(".1234") {
-  | Ok(".1234", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run(".4") {
-  | Ok(".4", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run(".0000345") {
-  | Ok(".0000345", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-})
+Test_runners.runTests(
+  ~makeName=(input, _) => `[Fraction succeeds] "${input}"`,
+  ~parser=Json.fraction,
+  ~specs=[(".1234", ".1234", ""), (".4", ".4", ""), (".0000345", ".0000345", "")],
+)
 
 test("Fraction partially succeeds", t => {
   switch run(".654hello") {
-  | Ok(".654", "hello") => t->pass()
+  | Ok(".654", state) if remaining(state) == "hello" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 
   switch run(".1  1") {
-  | Ok(".1", "  1") => t->pass()
+  | Ok(".1", state) if remaining(state) == "  1" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 })
 
-test("Fraction fails", t => {
-  switch run("  .1") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-
-  switch run(".e1") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-
-  switch run(". .1") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-
-  switch run("..") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-
-  switch run("..11") {
-  | Error(_) => t->pass()
-  | Ok(_) => t->fail()
-  }
-})
+Test_runners.runFailureTests(
+  ~makeName=input => `[Fraction fails] "${input}"`,
+  ~parser=Json.fraction,
+  ~specs=["  .1", ".e1", ". .1", "..", "..11"],
+)
 
 let run = P.run(Json.sign)
 
 test("Sign succeeds", t => {
   switch run("-") {
-  | Ok('-', "") => t->pass()
+  | Ok('-', state) if remaining(state) == "" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 
   switch run("+") {
-  | Ok('+', "") => t->pass()
+  | Ok('+', state) if remaining(state) == "" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 })
 
 test("Sign partially succeeds", t => {
   switch run("+1") {
-  | Ok('+', "1") => t->pass()
+  | Ok('+', s) if remaining(s) == "1" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 
   switch run("-1  1") {
-  | Ok('-', "1  1") => t->pass()
+  | Ok('-', s) if remaining(s) == "1  1" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 
   switch run("+     sdf1  1") {
-  | Ok('+', "     sdf1  1") => t->pass()
+  | Ok('+', s) if remaining(s) == "     sdf1  1" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 })
@@ -262,49 +159,27 @@ test("Sign fails", t => {
 
 let run = P.run(Json.integer)
 
-test("Integer succeeds", t => {
-  switch run("1") {
-  | Ok("1", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("0") {
-  | Ok("0", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("1234") {
-  | Ok("1234", "") => t->pass()
-  | Ok(ok, rest) => t->fail(~message=`Should not have "${ok}" with "${rest}" remaining`, ())
-  | Error(_) => t->fail()
-  }
-
-  switch run("-1") {
-  | Ok("-1", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("-0") {
-  | Ok("-0", "") => t->pass()
-  | Ok(_) | Error(_) => t->fail()
-  }
-
-  switch run("-10002345") {
-  | Ok("-10002345", "") => t->pass()
-  | Ok((res, remaining)) =>
-    t->fail(~message=`Should not be okay of "${res}" with "${remaining}" remaining`, ())
-  | Error(_) => t->fail(~message="Should not be an error", ())
-  }
-})
+Test_runners.runTests(
+  ~makeName=(input, _) => `[Integer succeeds] "${input}"`,
+  ~parser=Json.integer,
+  ~specs=[
+    ("1", "1", ""),
+    ("0", "0", ""),
+    ("1234", "1234", ""),
+    ("-1", "-1", ""),
+    ("-0", "-0", ""),
+    ("-10002345", "-10002345", ""),
+  ],
+)
 
 test("Integer partially succeeds", t => {
   switch run("1ert") {
-  | Ok("1", "ert") => t->pass()
+  | Ok("1", s) if remaining(s) == "ert" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 
   switch run("-1  1") {
-  | Ok("-1", "  1") => t->pass()
+  | Ok("-1", s) if remaining(s) == "  1" => t->pass()
   | Ok(_) | Error(_) => t->fail()
   }
 })
@@ -328,68 +203,25 @@ test("Integer fails", t => {
 
 let run = P.run(Json.unescapedChar)
 
-test("Unescaped char succeeds", t => {
-  switch run("a") {
-  | Ok("a", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
+Test_runners.runTests(
+  ~makeName=(input, _) => `[Unescaped char] "${input}"`,
+  ~parser=Json.unescapedChar,
+  ~specs=[
+    ("a", "a", ""),
+    ("b", "b", ""),
+    ("c", "c", ""),
+    ("d", "d", ""),
+    ("9", "9", ""),
+    ("-", "-", ""),
+    (" ", " ", ""),
+  ],
+)
 
-  switch run("b") {
-  | Ok("b", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("c") {
-  | Ok("c", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("d") {
-  | Ok("d", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("9") {
-  | Ok("9", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("-") {
-  | Ok("-", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-  switch run(" ") {
-  | Ok(" ", "") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-})
-
-test("Unescaped char partially succeeds", t => {
-  switch run(`a"`) {
-  | Ok("a", `"`) => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("a\\") {
-  | Ok("a", "\\") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-
-  switch run("a\\\"") {
-  | Ok("a", "\\\"") => t->pass()
-  | Ok(_) => t->fail()
-  | Error(_) => t->fail(~message="Should not fail", ())
-  }
-})
+Test_runners.runTests(
+  ~makeName=(input, _) => `[Unescaped char partial] "${input}"`,
+  ~parser=Json.unescapedChar,
+  ~specs=[(`a"`, "a", `"`), ("a\\", "a", "\\"), ("a\\\"", "a", "\\\"")],
+)
 
 test("Unescaped char fails", t => {
   switch run(`"`) {
@@ -418,10 +250,13 @@ let successes = [
 successes->Belt.Array.forEach(((input, expected)) => {
   test(`[Escaped char] "${input}" succeeds`, t => {
     switch run(input) {
-    | Ok(x, "") if x == expected => t->pass()
-    | Ok(j, remaining) =>
-      t->fail(~message=`Should not succeed with "${j}" and "${remaining}" remaining`, ())
-    | Error(err) => t->fail(~message=`Should not fail with "${err}"`, ())
+    | Ok(j, s) =>
+      t->Ava.true_(
+        j == expected,
+        ~message=`Should not succeed with "${j}" and "${remaining(s)}" remaining`,
+        (),
+      )
+    | Error(err) => t->fail(~message=`Should not fail with "${err.message}"`, ())
     }
   })
 })
@@ -436,56 +271,46 @@ let partialSuccesses = [
   ("\\t\lll", "\t", "\lll"),
 ]
 
-partialSuccesses->Belt.Array.forEach(((input, expected, remaining)) => {
+partialSuccesses->Belt.Array.forEach(((input, expected, remaining_)) => {
   test(`[Escaped char] "${input}" partially succeeds`, t => {
     switch run(input) {
-    | Ok(e, r) if e == expected && r == remaining => t->pass()
-    | Ok(e, r) => t->fail(~message=`Shouldn't succeed with "${e}" and "${r}" remaining`, ())
-    | Error(err) => t->fail(~message=`Shouldn't fail with "${err}"`, ())
+    | Ok(e, r) if e == expected && remaining(r) == remaining_ => t->pass()
+    | Ok(e, r) =>
+      t->fail(~message=`Shouldn't succeed with "${e}" and "${remaining(r)}" remaining`, ())
+    | Error(err) => t->fail(~message=`Shouldn't fail with "${err.message}"`, ())
     }
   })
 })
 
-test("Escaped char fails", t => {
-  switch run(" \"") {
-  | Ok(_) => t->fail()
-  | Error(_) => t->pass()
-  }
-
-  switch run(" \\\"") {
-  | Ok(_) => t->fail()
-  | Error(_) => t->pass()
-  }
-
-  switch run("asfds\t") {
-  | Ok(_) => t->fail()
-  | Error(_) => t->pass()
-  }
-})
+Test_runners.runFailureTests(
+  ~parser=Json.escapedChar,
+  ~makeName=input => `[Escaped char] "${input}"`,
+  ~specs=[" \"", " \\\"", "asfds\t"],
+)
 
 let run = P.run(Json.unicodeChar)
 
 test("Unicode char succeeds", t => {
   switch run("\u0041") {
-  | Ok("A", "") => t->pass()
+  | Ok("A", state) if remaining(state) == "" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run("\u0031") {
-  | Ok("1", "") => t->pass()
+  | Ok("1", state) if remaining(state) == "" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run("\u0028") {
-  | Ok("(", "") => t->pass()
+  | Ok("(", state) if remaining(state) == "" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run("\u0101") {
-  | Ok(x, "") if x == Js.String.fromCharCode(257) /* "ā" */ => t->pass()
+  | Ok(x, _) if x == Js.String.fromCharCode(257) /* "ā" */ => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
@@ -493,54 +318,38 @@ test("Unicode char succeeds", t => {
 
 test("Unicode char partially succeeds", t => {
   switch run("\u0041asdf") {
-  | Ok("A", "asdf") => t->pass()
+  | Ok("A", s) if remaining(s) == "asdf" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run("\\u0041asdf") {
-  | Ok("A", "asdf") => t->pass()
+  | Ok("A", s) if remaining(s) == "asdf" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run("\u0031999") {
-  | Ok("1", "999") => t->pass()
+  | Ok("1", s) if remaining(s) == "999" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run("\u0028   lol") {
-  | Ok("(", "   lol") => t->pass()
+  | Ok("(", s) if remaining(s) == "   lol" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 
   switch run("\u0101\u0101") {
-  | Ok(x, "\u0101") if x == Js.String.fromCharCode(257) /* "ā" */ => t->pass()
+  | Ok(x, s) if x == Js.String.fromCharCode(257) /* "ā" */ && remaining(s) == "\u0101" => t->pass()
   | Ok(x) => t->fail(~message=shouldNotPass(x), ())
   | Error(_) => t->fail(~message=shouldNotFail, ())
   }
 })
 
-test("Unicode char fails", t => {
-  switch run("  \u0041asdf") {
-  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
-  | Error(_) => t->pass(~message=shouldNotFail, ())
-  }
-
-  switch run("\\\u0031999") {
-  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
-  | Error(_) => t->pass(~message=shouldNotFail, ())
-  }
-
-  switch run("l\u0028   lol") {
-  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
-  | Error(_) => t->pass(~message=shouldNotFail, ())
-  }
-
-  switch run("/\u0101\u0101") {
-  | Ok(x) => t->fail(~message=shouldNotPass(x), ())
-  | Error(_) => t->pass(~message=shouldNotFail, ())
-  }
-})
+Test_runners.runFailureTests(
+  ~makeName=input => `[Unicode char] "${input}"`,
+  ~parser=Json.unicodeChar,
+  ~specs=["  \u0041asdf", "\\\u0031999", "l\u0028   lol", "/\u0101\u0101"],
+)

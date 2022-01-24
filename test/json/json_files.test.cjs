@@ -34,15 +34,11 @@ var partials = readFiles("partials");
 Belt_Array.forEach(passes, (function (param) {
         var file = param[1];
         return Ava.test("[JSON] File \"" + param[0] + "\" success", (function (t) {
-                      var msg = Res_parser.run(Json.parse, file);
-                      if (msg.TAG !== /* Ok */0) {
-                        return Ava.fail(t, "Shouldn't fail with \"" + msg._0 + "\"", undefined);
-                      }
-                      var rest = msg._0[1];
-                      if (rest === "") {
-                        return Ava.pass(t, "Should succeed", undefined);
+                      var err = Res_parser.run(Json.parse, file);
+                      if (err.TAG === /* Ok */0) {
+                        return Ava.true_(t, Res_parser.State.remaining(err._0[1]) === "", undefined, undefined);
                       } else {
-                        return Ava.fail(t, "Shouldn't partially succeed with \"" + rest + "\" remaining", undefined);
+                        return Ava.fail(t, "Should not fail with \"" + err._0.message + "\"", undefined);
                       }
                     }));
       }));
@@ -50,28 +46,24 @@ Belt_Array.forEach(passes, (function (param) {
 Belt_Array.forEach(partials, (function (param) {
         var file = param[1];
         return Ava.test("[JSON] File \"" + param[0] + "\" partial success", (function (t) {
-                      var msg = Res_parser.run(Json.parse, file);
-                      if (msg.TAG !== /* Ok */0) {
-                        return Ava.fail(t, "Shouldn't fail with \"" + msg._0 + "\"", undefined);
+                      var err = Res_parser.run(Json.parse, file);
+                      if (err.TAG !== /* Ok */0) {
+                        return Ava.fail(t, "Should not fail with \"" + err._0.message + "\"", undefined);
                       }
-                      var rest = msg._0[1];
-                      if (rest === "") {
-                        return Ava.fail(t, "Shouldn't succeed", undefined);
-                      } else {
-                        return Ava.pass(t, "Should partially succeed with \"" + rest + "\" remaining", undefined);
-                      }
+                      var state = err._0[1];
+                      return Ava.true_(t, Res_parser.State.remaining(state) !== "", "Should partially succeed with \"" + Res_parser.State.remaining(state) + "\" remaining", undefined);
                     }));
       }));
 
 Belt_Array.forEach(failures, (function (param) {
         var file = param[1];
         return Ava.test("[JSON] File \"" + param[0] + "\" failure", (function (t) {
-                      var msg = Res_parser.run(Json.parse, file);
-                      if (msg.TAG !== /* Ok */0) {
-                        return Ava.pass(t, "Should fail with \"" + msg._0 + "\"", undefined);
+                      var err = Res_parser.run(Json.parse, file);
+                      if (err.TAG !== /* Ok */0) {
+                        return Ava.pass(t, "Should fail with \"" + err._0.message + "\"", undefined);
                       }
-                      var match = msg._0;
-                      return Ava.fail(t, "Shouldn't succeed with \"" + Json.toString(match[0]) + "\" and \"" + match[1] + "\" remaining", undefined);
+                      var match = err._0;
+                      return Ava.fail(t, "Shouldn't succeed with \"" + Json.toString(match[0]) + "\" and \"" + Res_parser.State.remaining(match[1]) + "\" remaining", undefined);
                     }));
       }));
 

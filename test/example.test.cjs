@@ -3,7 +3,6 @@
 
 var Ava = require("rescript-ava/src/ava.cjs");
 var Char = require("rescript/lib/js/char.js");
-var Caml_obj = require("rescript/lib/js/caml_obj.js");
 var Res_parser = require("../src/res_parser.cjs");
 var Caml_format = require("rescript/lib/js/caml_format.js");
 
@@ -19,7 +18,10 @@ var sign = Res_parser.choice([
             }))
     ]);
 
-var manyWhitespace = Res_parser.many(Res_parser.$$char(/* ' ' */32));
+var manyWhitespace = Res_parser.many(Res_parser.anyOf([
+          /* ' ' */32,
+          /* '\n' */10
+        ]));
 
 var singleDigit = Res_parser.between(Res_parser.map(Res_parser.map(Res_parser.map(Res_parser.satisfy(function ($$char) {
                       if ($$char >= /* '0' */48) {
@@ -44,22 +46,26 @@ var parser = Res_parser.map(Res_parser.andThen(Res_parser.andThen(singleDigit, s
 
 var result = Res_parser.run(parser, " 1 +  4  ");
 
-Ava.test("Example.test", (function (t) {
-        return Ava.true_(t, Caml_obj.caml_equal(result, {
-                        TAG: /* Ok */0,
-                        _0: [
-                          /* Expression */{
-                            _0: /* SingleDigit */{
-                              _0: 1
-                            },
-                            _1: /* Plus */0,
-                            _2: /* SingleDigit */{
-                              _0: 4
-                            }
-                          },
-                          ""
-                        ]
-                      }), undefined, undefined);
+Ava.test("[Example.test] success", (function (t) {
+        if (result.TAG !== /* Ok */0) {
+          return Ava.fail(t, result._0.message, undefined);
+        }
+        var match = result._0;
+        var e = match[0];
+        if (e._0._0 === 1 && e._1 === 0 && e._2._0 === 4 && Res_parser.State.remaining(match[1]) === "") {
+          return Ava.pass(t, undefined, undefined);
+        }
+        console.log(e);
+        return Ava.fail(t, "Succeeded with \"" + Res_parser.State.remaining(match[1]) + "\"", undefined);
+      }));
+
+Ava.test("[Example.test] error", (function (t) {
+        var error = Res_parser.run(parser, "\n  \n  \n  \n  \n  \n  \n  1\n  \n  \n  ++ e");
+        if (error.TAG === /* Ok */0) {
+          return Ava.fail(t, "Shouldn't succeed", undefined);
+        } else {
+          return Ava.pass(t, error._0.message, undefined);
+        }
       }));
 
 var P;

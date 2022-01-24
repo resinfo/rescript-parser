@@ -6,9 +6,12 @@ var Json = require("./parser/json.cjs");
 var Belt_Array = require("rescript/lib/js/belt_Array.js");
 var Belt_Range = require("rescript/lib/js/belt_Range.js");
 var Res_parser = require("../../src/res_parser.cjs");
+var Test_runners = require("../test_runners.cjs");
+
+var remaining = Res_parser.State.remaining;
 
 function shouldNotPass(param) {
-  return "Should not pass with \"" + param[1] + "\" remaining";
+  return "Should not pass with \"" + remaining(param[1]) + "\" remaining";
 }
 
 var shouldNotFail = "Should not fail";
@@ -16,271 +19,158 @@ var shouldNotFail = "Should not fail";
 Ava.test("Digit succeeds", (function (t) {
         return Belt_Range.forEach(0, 9, (function (index) {
                       var asString = String(index);
-                      var result = Res_parser.run(Json.digit, asString);
-                      if (result.TAG !== /* Ok */0) {
-                        return Ava.fail(t, "Failure to parse digit: " + result._0, undefined);
+                      var error = Res_parser.run(Json.digit, asString);
+                      if (error.TAG !== /* Ok */0) {
+                        return Ava.fail(t, "Failure to parse digit: \"" + error._0.message + "\"", undefined);
                       }
-                      var match = result._0;
-                      var remaining = match[1];
-                      if (remaining === "") {
+                      var match = error._0;
+                      var state = match[1];
+                      if (Res_parser.State.remaining(state) === "") {
                         return Ava.true_(t, match[0] === asString, undefined, undefined);
                       } else {
-                        return Ava.fail(t, "Parsing digit had remaining characters: \"" + remaining + "\"", undefined);
+                        return Ava.fail(t, "Parsing digit had remaining characters: \"" + state.input + "\"", undefined);
                       }
                     }));
       }));
 
-Ava.test("Digit partially succeeds", (function (t) {
-        var result = Res_parser.run(Json.digit, "10");
-        if (result.TAG === /* Ok */0) {
-          var match = result._0;
-          if (match[0] === "1" && match[1] === "0") {
-            Ava.pass(t, "Should be a digit with a char remaining", undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var result$1 = Res_parser.run(Json.digit, "1hello");
-        if (result$1.TAG !== /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        }
-        var match$1 = result$1._0;
-        if (match$1[0] === "1" && match$1[1] === "hello") {
-          return Ava.pass(t, "Should be a digit with a char remaining", undefined);
-        } else {
-          return Ava.fail(t, undefined, undefined);
-        }
-      }));
+Test_runners.runTests(Json.digit, (function (input, param) {
+        return "[JSON Digit] Run with \"" + input + "\"";
+      }), [
+      [
+        "10",
+        "1",
+        "0"
+      ],
+      [
+        "1hello",
+        "1",
+        "hello"
+      ]
+    ]);
 
-Ava.test("Digit fails", (function (t) {
-        var result = Res_parser.run(Json.digit, "hello");
-        if (result.TAG === /* Ok */0) {
-          return Ava.fail(t, "Should fail outright", undefined);
-        } else {
-          return Ava.pass(t, "Fails to parse, reason: \"" + result._0 + "\"", undefined);
-        }
-      }));
+Test_runners.runFailureTests(Json.digit, (function (input) {
+        return "[JSON Digit] Fail with \"" + input + "\"";
+      }), ["hello"]);
 
-Ava.test("Digits succeeds", (function (t) {
-        var result = Res_parser.run(Json.digits, "1");
-        if (result.TAG === /* Ok */0) {
-          var match = result._0;
-          var exit = 0;
-          if (match[0] === "1" && match[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            exit = 1;
-          }
-          if (exit === 1) {
-            Ava.fail(t, "Passed with \"" + match[1] + "\" remaining", undefined);
-          }
-          
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var result$1 = Res_parser.run(Json.digits, "123");
-        if (result$1.TAG === /* Ok */0) {
-          var match$1 = result$1._0;
-          var exit$1 = 0;
-          if (match$1[0] === "123" && match$1[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            exit$1 = 1;
-          }
-          if (exit$1 === 1) {
-            Ava.fail(t, "Passed with \"" + match$1[1] + "\" remaining", undefined);
-          }
-          
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var result$2 = Res_parser.run(Json.digits, "123asdf");
-        if (result$2.TAG !== /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        }
-        var match$2 = result$2._0;
-        if (match$2[0] === "123" && match$2[1] === "asdf") {
-          return Ava.pass(t, undefined, undefined);
-        }
-        return Ava.fail(t, "Passed with \"" + match$2[1] + "\" remaining", undefined);
-      }));
+Test_runners.runTests(Json.digits, (function (input, param) {
+        return "[JSON digit] Run with \"" + input + "\"";
+      }), [
+      [
+        "1",
+        "1",
+        ""
+      ],
+      [
+        "123",
+        "123",
+        ""
+      ],
+      [
+        "123asdf",
+        "123",
+        "asdf"
+      ]
+    ]);
 
 Ava.test("Digits fails", (function (t) {
-        var result = Res_parser.run(Json.digits, " 123");
-        if (result.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var result$1 = Res_parser.run(Json.digits, "not even close");
-        if (result$1.TAG === /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        } else {
-          return Ava.pass(t, undefined, undefined);
-        }
-      }));
-
-Ava.test("Exponent succeeds", (function (t) {
-        var match = Res_parser.run(Json.exponent, "e-1234");
-        if (match.TAG === /* Ok */0) {
-          var match$1 = match._0;
-          if (match$1[0] === "e-1234" && match$1[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$2 = Res_parser.run(Json.exponent, "E-1234");
-        if (match$2.TAG === /* Ok */0) {
-          var match$3 = match$2._0;
-          if (match$3[0] === "E-1234" && match$3[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$4 = Res_parser.run(Json.exponent, "e1234");
-        if (match$4.TAG === /* Ok */0) {
-          var match$5 = match$4._0;
-          if (match$5[0] === "e1234" && match$5[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$6 = Res_parser.run(Json.exponent, "E1234");
-        if (match$6.TAG === /* Ok */0) {
-          var match$7 = match$6._0;
-          if (match$7[0] === "E1234" && match$7[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$8 = Res_parser.run(Json.exponent, "e0");
-        if (match$8.TAG === /* Ok */0) {
-          var match$9 = match$8._0;
-          if (match$9[0] === "e0" && match$9[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$10 = Res_parser.run(Json.exponent, "E0");
-        if (match$10.TAG !== /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        }
-        var match$11 = match$10._0;
-        if (match$11[0] === "E0" && match$11[1] === "") {
-          return Ava.pass(t, undefined, undefined);
-        } else {
-          return Ava.fail(t, undefined, undefined);
-        }
-      }));
-
-Ava.test("Exponent partially succeeds", (function (t) {
-        var match = Res_parser.run(Json.exponent, "e-1234hello");
-        if (match.TAG === /* Ok */0) {
-          var match$1 = match._0;
-          if (match$1[0] === "e-1234" && match$1[1] === "hello") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$2 = Res_parser.run(Json.exponent, "e-1234  1");
-        if (match$2.TAG !== /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        }
-        var match$3 = match$2._0;
-        if (match$3[0] === "e-1234" && match$3[1] === "  1") {
-          return Ava.pass(t, undefined, undefined);
-        } else {
-          return Ava.fail(t, undefined, undefined);
-        }
-      }));
-
-Ava.test("Exponent fails", (function (t) {
-        var match = Res_parser.run(Json.exponent, "  E0");
+        var match = Res_parser.run(Json.digit, " 123");
         if (match.TAG === /* Ok */0) {
           Ava.fail(t, undefined, undefined);
         } else {
           Ava.pass(t, undefined, undefined);
         }
-        var match$1 = Res_parser.run(Json.exponent, "e--1");
+        var match$1 = Res_parser.run(Json.digit, "not even close");
         if (match$1.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$2 = Res_parser.run(Json.exponent, "e-");
-        if (match$2.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$3 = Res_parser.run(Json.exponent, "ye ");
-        if (match$3.TAG === /* Ok */0) {
           return Ava.fail(t, undefined, undefined);
         } else {
           return Ava.pass(t, undefined, undefined);
         }
       }));
 
-Ava.test("Fraction succeeds", (function (t) {
-        var match = Res_parser.run(Json.fraction, ".1234");
-        if (match.TAG === /* Ok */0) {
-          var match$1 = match._0;
-          if (match$1[0] === ".1234" && match$1[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$2 = Res_parser.run(Json.fraction, ".4");
-        if (match$2.TAG === /* Ok */0) {
-          var match$3 = match$2._0;
-          if (match$3[0] === ".4" && match$3[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$4 = Res_parser.run(Json.fraction, ".0000345");
-        if (match$4.TAG !== /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        }
-        var match$5 = match$4._0;
-        if (match$5[0] === ".0000345" && match$5[1] === "") {
-          return Ava.pass(t, undefined, undefined);
-        } else {
-          return Ava.fail(t, undefined, undefined);
-        }
-      }));
+Test_runners.runTests(Json.exponent, (function (input, param) {
+        return "[Exponent] \"" + input + "\"";
+      }), [
+      [
+        "e-1234",
+        "e-1234",
+        ""
+      ],
+      [
+        "E-1234",
+        "E-1234",
+        ""
+      ],
+      [
+        "e1234",
+        "e1234",
+        ""
+      ],
+      [
+        "E1234",
+        "E1234",
+        ""
+      ],
+      [
+        "e0",
+        "e0",
+        ""
+      ],
+      [
+        "E0",
+        "E0",
+        ""
+      ]
+    ]);
+
+Test_runners.runTests(Json.exponent, (function (input, param) {
+        return "[Exponent Partial] \"" + input + "\"";
+      }), [
+      [
+        "e-1234hello",
+        "e-1234",
+        "hello"
+      ],
+      [
+        "e-1234  1",
+        "e-1234",
+        "  1"
+      ]
+    ]);
+
+Test_runners.runFailureTests(Json.exponent, (function (input) {
+        return "[Exponent fails] \"" + input + "\"";
+      }), [
+      "  E0",
+      "e--1",
+      "e-",
+      "ye "
+    ]);
+
+Test_runners.runTests(Json.fraction, (function (input, param) {
+        return "[Fraction succeeds] \"" + input + "\"";
+      }), [
+      [
+        ".1234",
+        ".1234",
+        ""
+      ],
+      [
+        ".4",
+        ".4",
+        ""
+      ],
+      [
+        ".0000345",
+        ".0000345",
+        ""
+      ]
+    ]);
 
 Ava.test("Fraction partially succeeds", (function (t) {
         var match = Res_parser.run(Json.fraction, ".654hello");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
-          if (match$1[0] === ".654" && match$1[1] === "hello") {
+          if (match$1[0] === ".654" && remaining(match$1[1]) === "hello") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, undefined, undefined);
@@ -293,51 +183,28 @@ Ava.test("Fraction partially succeeds", (function (t) {
           return Ava.fail(t, undefined, undefined);
         }
         var match$3 = match$2._0;
-        if (match$3[0] === ".1" && match$3[1] === "  1") {
+        if (match$3[0] === ".1" && remaining(match$3[1]) === "  1") {
           return Ava.pass(t, undefined, undefined);
         } else {
           return Ava.fail(t, undefined, undefined);
         }
       }));
 
-Ava.test("Fraction fails", (function (t) {
-        var match = Res_parser.run(Json.fraction, "  .1");
-        if (match.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$1 = Res_parser.run(Json.fraction, ".e1");
-        if (match$1.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$2 = Res_parser.run(Json.fraction, ". .1");
-        if (match$2.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$3 = Res_parser.run(Json.fraction, "..");
-        if (match$3.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$4 = Res_parser.run(Json.fraction, "..11");
-        if (match$4.TAG === /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        } else {
-          return Ava.pass(t, undefined, undefined);
-        }
-      }));
+Test_runners.runFailureTests(Json.fraction, (function (input) {
+        return "[Fraction fails] \"" + input + "\"";
+      }), [
+      "  .1",
+      ".e1",
+      ". .1",
+      "..",
+      "..11"
+    ]);
 
 Ava.test("Sign succeeds", (function (t) {
         var match = Res_parser.run(Json.sign, "-");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
-          if (match$1[0] !== 45 || match$1[1] !== "") {
+          if (match$1[0] !== 45 || remaining(match$1[1]) !== "") {
             Ava.fail(t, undefined, undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -350,7 +217,7 @@ Ava.test("Sign succeeds", (function (t) {
           return Ava.fail(t, undefined, undefined);
         }
         var match$3 = match$2._0;
-        if (match$3[0] !== 43 || match$3[1] !== "") {
+        if (match$3[0] !== 43 || remaining(match$3[1]) !== "") {
           return Ava.fail(t, undefined, undefined);
         } else {
           return Ava.pass(t, undefined, undefined);
@@ -361,7 +228,7 @@ Ava.test("Sign partially succeeds", (function (t) {
         var match = Res_parser.run(Json.sign, "+1");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
-          if (match$1[0] !== 43 || match$1[1] !== "1") {
+          if (match$1[0] !== 43 || remaining(match$1[1]) !== "1") {
             Ava.fail(t, undefined, undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -372,7 +239,7 @@ Ava.test("Sign partially succeeds", (function (t) {
         var match$2 = Res_parser.run(Json.sign, "-1  1");
         if (match$2.TAG === /* Ok */0) {
           var match$3 = match$2._0;
-          if (match$3[0] !== 45 || match$3[1] !== "1  1") {
+          if (match$3[0] !== 45 || remaining(match$3[1]) !== "1  1") {
             Ava.fail(t, undefined, undefined);
           } else {
             Ava.pass(t, undefined, undefined);
@@ -385,7 +252,7 @@ Ava.test("Sign partially succeeds", (function (t) {
           return Ava.fail(t, undefined, undefined);
         }
         var match$5 = match$4._0;
-        if (match$5[0] !== 43 || match$5[1] !== "     sdf1  1") {
+        if (match$5[0] !== 43 || remaining(match$5[1]) !== "     sdf1  1") {
           return Ava.fail(t, undefined, undefined);
         } else {
           return Ava.pass(t, undefined, undefined);
@@ -407,85 +274,46 @@ Ava.test("Sign fails", (function (t) {
         }
       }));
 
-Ava.test("Integer succeeds", (function (t) {
-        var match = Res_parser.run(Json.integer, "1");
-        if (match.TAG === /* Ok */0) {
-          var match$1 = match._0;
-          if (match$1[0] === "1" && match$1[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$2 = Res_parser.run(Json.integer, "0");
-        if (match$2.TAG === /* Ok */0) {
-          var match$3 = match$2._0;
-          if (match$3[0] === "0" && match$3[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$4 = Res_parser.run(Json.integer, "1234");
-        if (match$4.TAG === /* Ok */0) {
-          var match$5 = match$4._0;
-          var ok = match$5[0];
-          var exit = 0;
-          if (ok === "1234" && match$5[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            exit = 1;
-          }
-          if (exit === 1) {
-            Ava.fail(t, "Should not have \"" + ok + "\" with \"" + match$5[1] + "\" remaining", undefined);
-          }
-          
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$6 = Res_parser.run(Json.integer, "-1");
-        if (match$6.TAG === /* Ok */0) {
-          var match$7 = match$6._0;
-          if (match$7[0] === "-1" && match$7[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$8 = Res_parser.run(Json.integer, "-0");
-        if (match$8.TAG === /* Ok */0) {
-          var match$9 = match$8._0;
-          if (match$9[0] === "-0" && match$9[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, undefined, undefined);
-        }
-        var match$10 = Res_parser.run(Json.integer, "-10002345");
-        if (match$10.TAG !== /* Ok */0) {
-          return Ava.fail(t, "Should not be an error", undefined);
-        }
-        var match$11 = match$10._0;
-        var res = match$11[0];
-        if (res === "-10002345" && match$11[1] === "") {
-          return Ava.pass(t, undefined, undefined);
-        }
-        return Ava.fail(t, "Should not be okay of \"" + res + "\" with \"" + match$11[1] + "\" remaining", undefined);
-      }));
+Test_runners.runTests(Json.integer, (function (input, param) {
+        return "[Integer succeeds] \"" + input + "\"";
+      }), [
+      [
+        "1",
+        "1",
+        ""
+      ],
+      [
+        "0",
+        "0",
+        ""
+      ],
+      [
+        "1234",
+        "1234",
+        ""
+      ],
+      [
+        "-1",
+        "-1",
+        ""
+      ],
+      [
+        "-0",
+        "-0",
+        ""
+      ],
+      [
+        "-10002345",
+        "-10002345",
+        ""
+      ]
+    ]);
 
 Ava.test("Integer partially succeeds", (function (t) {
         var match = Res_parser.run(Json.integer, "1ert");
         if (match.TAG === /* Ok */0) {
           var match$1 = match._0;
-          if (match$1[0] === "1" && match$1[1] === "ert") {
+          if (match$1[0] === "1" && remaining(match$1[1]) === "ert") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, undefined, undefined);
@@ -498,7 +326,7 @@ Ava.test("Integer partially succeeds", (function (t) {
           return Ava.fail(t, undefined, undefined);
         }
         var match$3 = match$2._0;
-        if (match$3[0] === "-1" && match$3[1] === "  1") {
+        if (match$3[0] === "-1" && remaining(match$3[1]) === "  1") {
           return Ava.pass(t, undefined, undefined);
         } else {
           return Ava.fail(t, undefined, undefined);
@@ -526,119 +354,65 @@ Ava.test("Integer fails", (function (t) {
         }
       }));
 
-Ava.test("Unescaped char succeeds", (function (t) {
-        var match = Res_parser.run(Json.unescapedChar, "a");
-        if (match.TAG === /* Ok */0) {
-          var match$1 = match._0;
-          if (match$1[0] === "a" && match$1[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$2 = Res_parser.run(Json.unescapedChar, "b");
-        if (match$2.TAG === /* Ok */0) {
-          var match$3 = match$2._0;
-          if (match$3[0] === "b" && match$3[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$4 = Res_parser.run(Json.unescapedChar, "c");
-        if (match$4.TAG === /* Ok */0) {
-          var match$5 = match$4._0;
-          if (match$5[0] === "c" && match$5[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$6 = Res_parser.run(Json.unescapedChar, "d");
-        if (match$6.TAG === /* Ok */0) {
-          var match$7 = match$6._0;
-          if (match$7[0] === "d" && match$7[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$8 = Res_parser.run(Json.unescapedChar, "9");
-        if (match$8.TAG === /* Ok */0) {
-          var match$9 = match$8._0;
-          if (match$9[0] === "9" && match$9[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$10 = Res_parser.run(Json.unescapedChar, "-");
-        if (match$10.TAG === /* Ok */0) {
-          var match$11 = match$10._0;
-          if (match$11[0] === "-" && match$11[1] === "") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$12 = Res_parser.run(Json.unescapedChar, " ");
-        if (match$12.TAG !== /* Ok */0) {
-          return Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$13 = match$12._0;
-        if (match$13[0] === " " && match$13[1] === "") {
-          return Ava.pass(t, undefined, undefined);
-        } else {
-          return Ava.fail(t, undefined, undefined);
-        }
-      }));
+Test_runners.runTests(Json.unescapedChar, (function (input, param) {
+        return "[Unescaped char] \"" + input + "\"";
+      }), [
+      [
+        "a",
+        "a",
+        ""
+      ],
+      [
+        "b",
+        "b",
+        ""
+      ],
+      [
+        "c",
+        "c",
+        ""
+      ],
+      [
+        "d",
+        "d",
+        ""
+      ],
+      [
+        "9",
+        "9",
+        ""
+      ],
+      [
+        "-",
+        "-",
+        ""
+      ],
+      [
+        " ",
+        " ",
+        ""
+      ]
+    ]);
 
-Ava.test("Unescaped char partially succeeds", (function (t) {
-        var match = Res_parser.run(Json.unescapedChar, "a\"");
-        if (match.TAG === /* Ok */0) {
-          var match$1 = match._0;
-          if (match$1[0] === "a" && match$1[1] === "\"") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$2 = Res_parser.run(Json.unescapedChar, "a\\");
-        if (match$2.TAG === /* Ok */0) {
-          var match$3 = match$2._0;
-          if (match$3[0] === "a" && match$3[1] === "\\") {
-            Ava.pass(t, undefined, undefined);
-          } else {
-            Ava.fail(t, undefined, undefined);
-          }
-        } else {
-          Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$4 = Res_parser.run(Json.unescapedChar, "a\\\"");
-        if (match$4.TAG !== /* Ok */0) {
-          return Ava.fail(t, "Should not fail", undefined);
-        }
-        var match$5 = match$4._0;
-        if (match$5[0] === "a" && match$5[1] === "\\\"") {
-          return Ava.pass(t, undefined, undefined);
-        } else {
-          return Ava.fail(t, undefined, undefined);
-        }
-      }));
+Test_runners.runTests(Json.unescapedChar, (function (input, param) {
+        return "[Unescaped char partial] \"" + input + "\"";
+      }), [
+      [
+        "a\"",
+        "a",
+        "\""
+      ],
+      [
+        "a\\",
+        "a",
+        "\\"
+      ],
+      [
+        "a\\\"",
+        "a",
+        "\\\""
+      ]
+    ]);
 
 Ava.test("Unescaped char fails", (function (t) {
         var match = Res_parser.run(Json.unescapedChar, "\"");
@@ -692,15 +466,11 @@ Belt_Array.forEach(successes, (function (param) {
         return Ava.test("[Escaped char] \"" + input + "\" succeeds", (function (t) {
                       var err = Res_parser.run(Json.escapedChar, input);
                       if (err.TAG !== /* Ok */0) {
-                        return Ava.fail(t, "Should not fail with \"" + err._0 + "\"", undefined);
+                        return Ava.fail(t, "Should not fail with \"" + err._0.message + "\"", undefined);
                       }
                       var match = err._0;
-                      var remaining = match[1];
-                      var x = match[0];
-                      if (remaining === "" && x === expected) {
-                        return Ava.pass(t, undefined, undefined);
-                      }
-                      return Ava.fail(t, "Should not succeed with \"" + x + "\" and \"" + remaining + "\" remaining", undefined);
+                      var j = match[0];
+                      return Ava.true_(t, j === expected, "Should not succeed with \"" + j + "\" and \"" + remaining(match[1]) + "\" remaining", undefined);
                     }));
       }));
 
@@ -743,45 +513,32 @@ var partialSuccesses = [
 ];
 
 Belt_Array.forEach(partialSuccesses, (function (param) {
-        var remaining = param[2];
+        var remaining_ = param[2];
         var expected = param[1];
         var input = param[0];
         return Ava.test("[Escaped char] \"" + input + "\" partially succeeds", (function (t) {
                       var err = Res_parser.run(Json.escapedChar, input);
                       if (err.TAG !== /* Ok */0) {
-                        return Ava.fail(t, "Shouldn't fail with \"" + err._0 + "\"", undefined);
+                        return Ava.fail(t, "Shouldn't fail with \"" + err._0.message + "\"", undefined);
                       }
                       var match = err._0;
                       var r = match[1];
                       var e = match[0];
-                      if (e === expected && r === remaining) {
+                      if (e === expected && remaining(r) === remaining_) {
                         return Ava.pass(t, undefined, undefined);
                       } else {
-                        return Ava.fail(t, "Shouldn't succeed with \"" + e + "\" and \"" + r + "\" remaining", undefined);
+                        return Ava.fail(t, "Shouldn't succeed with \"" + e + "\" and \"" + remaining(r) + "\" remaining", undefined);
                       }
                     }));
       }));
 
-Ava.test("Escaped char fails", (function (t) {
-        var match = Res_parser.run(Json.escapedChar, " \"");
-        if (match.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$1 = Res_parser.run(Json.escapedChar, " \\\"");
-        if (match$1.TAG === /* Ok */0) {
-          Ava.fail(t, undefined, undefined);
-        } else {
-          Ava.pass(t, undefined, undefined);
-        }
-        var match$2 = Res_parser.run(Json.escapedChar, "asfds\t");
-        if (match$2.TAG === /* Ok */0) {
-          return Ava.fail(t, undefined, undefined);
-        } else {
-          return Ava.pass(t, undefined, undefined);
-        }
-      }));
+Test_runners.runFailureTests(Json.escapedChar, (function (input) {
+        return "[Escaped char] \"" + input + "\"";
+      }), [
+      " \"",
+      " \\\"",
+      "asfds\t"
+    ]);
 
 function run(param) {
   return Res_parser.run(Json.unicodeChar, param);
@@ -791,7 +548,7 @@ Ava.test("Unicode char succeeds", (function (t) {
         var x = Res_parser.run(Json.unicodeChar, "\\u0041");
         if (x.TAG === /* Ok */0) {
           var x$1 = x._0;
-          if (x$1[0] === "A" && x$1[1] === "") {
+          if (x$1[0] === "A" && remaining(x$1[1]) === "") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, shouldNotPass(x$1), undefined);
@@ -802,7 +559,7 @@ Ava.test("Unicode char succeeds", (function (t) {
         var x$2 = Res_parser.run(Json.unicodeChar, "\\u0031");
         if (x$2.TAG === /* Ok */0) {
           var x$3 = x$2._0;
-          if (x$3[0] === "1" && x$3[1] === "") {
+          if (x$3[0] === "1" && remaining(x$3[1]) === "") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, shouldNotPass(x$3), undefined);
@@ -813,7 +570,7 @@ Ava.test("Unicode char succeeds", (function (t) {
         var x$4 = Res_parser.run(Json.unicodeChar, "\\u0028");
         if (x$4.TAG === /* Ok */0) {
           var x$5 = x$4._0;
-          if (x$5[0] === "(" && x$5[1] === "") {
+          if (x$5[0] === "(" && remaining(x$5[1]) === "") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, shouldNotPass(x$5), undefined);
@@ -826,7 +583,7 @@ Ava.test("Unicode char succeeds", (function (t) {
           return Ava.fail(t, shouldNotFail, undefined);
         }
         var x$7 = x$6._0;
-        if (x$7[1] === "" && x$7[0] === String.fromCharCode(257)) {
+        if (x$7[0] === String.fromCharCode(257)) {
           return Ava.pass(t, undefined, undefined);
         } else {
           return Ava.fail(t, shouldNotPass(x$7), undefined);
@@ -837,7 +594,7 @@ Ava.test("Unicode char partially succeeds", (function (t) {
         var x = Res_parser.run(Json.unicodeChar, "\\u0041asdf");
         if (x.TAG === /* Ok */0) {
           var x$1 = x._0;
-          if (x$1[0] === "A" && x$1[1] === "asdf") {
+          if (x$1[0] === "A" && remaining(x$1[1]) === "asdf") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, shouldNotPass(x$1), undefined);
@@ -848,7 +605,7 @@ Ava.test("Unicode char partially succeeds", (function (t) {
         var x$2 = Res_parser.run(Json.unicodeChar, "\\u0041asdf");
         if (x$2.TAG === /* Ok */0) {
           var x$3 = x$2._0;
-          if (x$3[0] === "A" && x$3[1] === "asdf") {
+          if (x$3[0] === "A" && remaining(x$3[1]) === "asdf") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, shouldNotPass(x$3), undefined);
@@ -859,7 +616,7 @@ Ava.test("Unicode char partially succeeds", (function (t) {
         var x$4 = Res_parser.run(Json.unicodeChar, "\\u0031999");
         if (x$4.TAG === /* Ok */0) {
           var x$5 = x$4._0;
-          if (x$5[0] === "1" && x$5[1] === "999") {
+          if (x$5[0] === "1" && remaining(x$5[1]) === "999") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, shouldNotPass(x$5), undefined);
@@ -870,7 +627,7 @@ Ava.test("Unicode char partially succeeds", (function (t) {
         var x$6 = Res_parser.run(Json.unicodeChar, "\\u0028   lol");
         if (x$6.TAG === /* Ok */0) {
           var x$7 = x$6._0;
-          if (x$7[0] === "(" && x$7[1] === "   lol") {
+          if (x$7[0] === "(" && remaining(x$7[1]) === "   lol") {
             Ava.pass(t, undefined, undefined);
           } else {
             Ava.fail(t, shouldNotPass(x$7), undefined);
@@ -883,43 +640,26 @@ Ava.test("Unicode char partially succeeds", (function (t) {
           return Ava.fail(t, shouldNotFail, undefined);
         }
         var x$9 = x$8._0;
-        if (x$9[1] === "\\u0101" && x$9[0] === String.fromCharCode(257)) {
+        if (x$9[0] === String.fromCharCode(257) && remaining(x$9[1]) === "\\u0101") {
           return Ava.pass(t, undefined, undefined);
         } else {
           return Ava.fail(t, shouldNotPass(x$9), undefined);
         }
       }));
 
-Ava.test("Unicode char fails", (function (t) {
-        var x = Res_parser.run(Json.unicodeChar, "  \\u0041asdf");
-        if (x.TAG === /* Ok */0) {
-          Ava.fail(t, shouldNotPass(x._0), undefined);
-        } else {
-          Ava.pass(t, shouldNotFail, undefined);
-        }
-        var x$1 = Res_parser.run(Json.unicodeChar, "\\\\u0031999");
-        if (x$1.TAG === /* Ok */0) {
-          Ava.fail(t, shouldNotPass(x$1._0), undefined);
-        } else {
-          Ava.pass(t, shouldNotFail, undefined);
-        }
-        var x$2 = Res_parser.run(Json.unicodeChar, "l\\u0028   lol");
-        if (x$2.TAG === /* Ok */0) {
-          Ava.fail(t, shouldNotPass(x$2._0), undefined);
-        } else {
-          Ava.pass(t, shouldNotFail, undefined);
-        }
-        var x$3 = Res_parser.run(Json.unicodeChar, "/\\u0101\\u0101");
-        if (x$3.TAG === /* Ok */0) {
-          return Ava.fail(t, shouldNotPass(x$3._0), undefined);
-        } else {
-          return Ava.pass(t, shouldNotFail, undefined);
-        }
-      }));
+Test_runners.runFailureTests(Json.unicodeChar, (function (input) {
+        return "[Unicode char] \"" + input + "\"";
+      }), [
+      "  \\u0041asdf",
+      "\\\\u0031999",
+      "l\\u0028   lol",
+      "/\\u0101\\u0101"
+    ]);
 
 var P;
 
 exports.P = P;
+exports.remaining = remaining;
 exports.shouldNotPass = shouldNotPass;
 exports.shouldNotFail = shouldNotFail;
 exports.successes = successes;
